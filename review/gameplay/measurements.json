@@ -1,0 +1,38 @@
+{
+  "origin": "http://127.0.0.1:4174",
+  "browser": "154.0.8037.57",
+  "gpu": "SwiftShader (software rendering)",
+  "physicalDevice": false,
+  "scenarios": [
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 1080,
+      "readyMs": 3979.5,
+      "bytes": 166975,
+      "overflow": false,
+      "elapsedMs": 6332.39999999851,
+      "renderedFrames": 6,
+      "averageRenderedFps": 0.9475080538186805,
+      "rafP95Ms": 1916.6000000000058,
+      "trianglesIncludingShadowPass": 68604,
+      "drawCallsIncludingShadowPass": 43,
+      "errors": []
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 844,
+      "readyMs": 3637.5,
+      "bytes": 166975,
+      "overflow": false,
+      "elapsedMs": 5067,
+      "renderedFrames": 7,
+      "averageRenderedFps": 1.3814880599960528,
+      "rafP95Ms": 1499.8999999999978,
+      "trianglesIncludingShadowPass": 68604,
+      "drawCallsIncludingShadowPass": 43,
+      "errors": []
+    }
+  ]
+}

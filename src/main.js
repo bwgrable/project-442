@@ -4,7 +4,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { createEngine } from './engine.js';
-import { initialState, transition, linkage, MECHANICS } from './mechanics.js';
+import { initialState, transition, linkage, MECHANICS, PARTS, LOCATIONS, canTest, getHint } from './mechanics.js';
 
 const $ = (id) => document.getElementById(id);
 const viewport = $('viewport');
@@ -22,50 +22,101 @@ const pointer = new THREE.Vector2();
 const yAxis = new THREE.Vector3(0, 1, 0);
 const projected = new THREE.Vector3();
 const bankDirection = new THREE.Vector3(Math.SQRT1_2, Math.SQRT1_2, 0);
+const crankBench = new THREE.Vector3(-2.7, -.18, 0);
+const capsBench = new THREE.Vector3(0, -.15, 3.05);
+const rodCapBench = new THREE.Vector3(2.65, -.6, 2.65);
 const benchPin = new THREE.Vector3(2.65, 1.65, 1.15);
 const benchRodBase = benchPin.clone().add(new THREE.Vector3(0, -MECHANICS.rodLength, 0));
-const descriptions = {
-  block: ['THE FOUNDATION', 'The block locates the cylinders and supports the crankshaft. The cutaway opens a window into the moving assembly.'],
-  crank: ['ROTATION, MADE VISIBLE', 'Offset journals carry the connecting rods around the crank’s axis. The counterweights balance the shape of the rotating assembly.'],
-  piston: ['THE CONNECTION', 'The wrist pin joins piston to rod. The rod’s other end follows a crankpin, turning rotation into travel along the cylinder.'],
-};
 const selectionMaterials = new Map();
 const metrics = { frameTimes: [], frames: 0, triangles: 0, drawCalls: 0, readyMs: 0 };
 
-function dispatch(action, message) {
+const partOrder = ['crank', 'piston', 'mainCaps', 'rodCap', 'block'];
+const locationOrder = ['mainLine', 'cylinder', 'mainCaps', 'crankpin', 'otherCylinders'];
+const letters = ['A', 'B', 'C', 'D', 'E'];
+function buildControls() {
+  $('part-list').innerHTML = partOrder.map((part, i) => `<button type="button" class="part-card" data-part="${part}" aria-pressed="false"><span class="part-symbol" aria-hidden="true">${['↻','↕','∩','∪','◇'][i]}</span><span><strong>${PARTS[part].name}</strong><small id="status-${part}">${part === 'block' ? 'Prepared fixture · inspect' : 'On the bench'}</small></span></button>`).join('');
+  $('location-list').innerHTML = locationOrder.map((location, i) => `<button type="button" data-location="${location}" aria-pressed="false"><span>${letters[i]}</span>${LOCATIONS[location].name}</button>`).join('');
+  $('scene-locations').innerHTML = locationOrder.map((location, i) => `<button type="button" class="location-marker" data-location="${location}" aria-label="Location ${letters[i]}: ${LOCATIONS[location].name}" title="${LOCATIONS[location].name}" hidden>${letters[i]}</button>`).join('');
+  $('viewport').insertAdjacentHTML('beforeend', '<div id="placement-dock" class="placement-dock" hidden><span id="dock-location">Choose a location</span><button type="button" id="dock-seat">Seat here</button><button type="button" id="dock-cancel" aria-label="Cancel scene placement">×</button></div>');
+}
+function dispatch(action) {
+  if (failed) return;
   state = transition(state, action);
   updateUI();
-  if (message) $('feedback').textContent = message;
-  if (!failed && engine) applyState();
+  if (engine) applyState();
   dirty = true;
 }
+function updateMotionUI() {
+  $('angle').value = Math.round(state.angle * 180 / Math.PI);
+  $('angle-value').value = `${Math.round(state.angle * 180 / Math.PI)}°`;
+  $('turn-progress').textContent = state.tested ? 'Full revolution complete · test passed' : `${Math.min(360, Math.round(Math.abs(state.testTravel) * 180 / Math.PI))}° / 360° · keep turning in one direction`;
+  $('completion').hidden = !state.tested;
+}
 function updateUI() {
-  document.querySelectorAll('[data-part]').forEach((button) => {
-    const chosen = button.dataset.part === state.selected;
+  const hint = getHint(state);
+  document.querySelectorAll('[data-part]').forEach(button => {
+    const part = button.dataset.part;
+    const chosen = part === state.selected;
     button.classList.toggle('selected', chosen);
+    button.classList.toggle('hinted', hint.level >= 3 && hint.part === part);
     button.setAttribute('aria-pressed', String(chosen));
+    const status = state.parts[part];
+    $(`status-${part}`).textContent = part === 'block' ? 'Prepared fixture · inspect' : status === 'bench' ? 'On the bench' : status === 'secured' ? 'Seated · secured' : ['mainCaps','rodCap'].includes(part) ? 'Seated · fasteners open' : 'Seated';
   });
-  const [title, copy] = descriptions[state.selected];
-  $('detail-type').textContent = title;
-  $('detail-copy').textContent = copy;
-  const installed = state.phase === 'installed';
-  document.body.classList.toggle('assembly-installed', installed);
-  $('piston-state').textContent = installed ? 'Connected · ready to turn' : state.phase === 'aligned' ? 'Selected · choose the blue destination' : 'On the bench · ready to inspect';
-  $('primary-action').hidden = installed;
-  $('action-text').textContent = state.selected !== 'piston' ? 'Inspect piston + rod' : state.phase === 'aligned' ? 'Seat in selected cylinder' : 'Find the connection';
-  $('cancel').hidden = state.phase !== 'aligned';
-  $('motion-controls').hidden = !installed;
-  $('placement-target').hidden = state.phase !== 'aligned' || failed;
+  const part = PARTS[state.selected];
+  $('detail-type').textContent = part ? part.name.toUpperCase() : 'THE BENCH';
+  $('detail-copy').textContent = part ? part.description : 'Explore the parts and decide what belongs where. Choose any component to inspect it.';
+  $('inspect-part').hidden = !state.selected;
+  const locating = state.phase === 'locate';
+  $('primary-action').hidden = !state.selected || state.selected === 'block' || state.parts[state.selected] !== 'bench' || locating;
+  $('location-panel').hidden = !locating;
+  $('cancel').hidden = !locating;
+  $('placement-dock').hidden = !locating;
+  $('dock-location').textContent = state.tone === 'error' ? state.feedback : state.location ? LOCATIONS[state.location].name : 'Choose a location';
+  $('dock-seat').disabled = !state.location;
+  $('seat').disabled = !state.location;
+  $('show-location').disabled = !state.location;
+  const fastening = ['mainCaps','rodCap'].includes(state.selected) && state.parts[state.selected] !== 'bench';
+  $('fastener-panel').hidden = !fastening;
+  document.querySelectorAll('[data-tool]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.tool === state.tool)));
+  document.querySelectorAll('[data-fastener]').forEach(button => {
+    const done = fastening && state.fasteners[state.selected][Number(button.dataset.fastener)];
+    button.textContent = `Fastener ${Number(button.dataset.fastener) === 0 ? 'A' : 'B'} · ${done ? 'secured' : 'open'}`;
+    button.setAttribute('aria-pressed', String(Boolean(done)));
+  });
+  document.querySelectorAll('[data-location]').forEach(button => {
+    const chosen = state.location === button.dataset.location;
+    button.setAttribute('aria-pressed', String(chosen));
+    button.classList.toggle('hinted', hint.level >= 3 && hint.location === button.dataset.location);
+    if (button.classList.contains('location-marker')) {
+      button.hidden = !locating && !(hint.level >= 3 && hint.location === button.dataset.location);
+      button.disabled = !locating;
+    }
+  });
+  $('feedback').textContent = state.feedback;
+  $('feedback').dataset.tone = state.tone;
+  $('hint').textContent = hint.level === 0 ? 'Need a hint?' : hint.level < 4 ? 'More help' : 'Walkthrough shown';
+  $('hint').disabled = hint.level >= 4 || state.tested;
+  $('hint-level').textContent = hint.level ? `${hint.level} / 4` : 'OPTIONAL';
+  $('hint-content').hidden = !hint.level;
+  $('hint-title').textContent = hint.title;
+  $('hint-copy').textContent = hint.text;
+  const seated = Object.values(state.parts).filter(status => status !== 'bench').length;
+  $('progress-count').textContent = `${seated} / 4 SEATED`;
+  $('assembly-status').textContent = state.tested ? 'CHALLENGE COMPLETE' : canTest(state) ? 'ASSEMBLY SECURED' : `${seated} OF 4 COMPONENTS SEATED`;
+  $('test-status').textContent = state.testStarted ? 'Use the angle slider, slow turn or 15° steps to complete one revolution.' : 'The test checks that the assembly is connected and secured.';
+  $('test').hidden = state.testStarted;
+  $('motion-controls').hidden = !state.testStarted;
+  document.body.classList.toggle('assembly-installed', state.testStarted);
   $('play').textContent = state.playing ? 'Pause' : 'Turn crank';
   $('play').disabled = reducedMotion.matches || failed;
   $('play').title = reducedMotion.matches ? 'Reduced motion is enabled. Use Step or the angle slider.' : '';
   $('section').setAttribute('aria-pressed', String(state.section));
   $('scene-badge').innerHTML = `<span></span> ${state.section ? 'CUTAWAY VIEW' : 'FULL CASTING'}`;
-  $('assembly-status').innerHTML = `<i></i> ${installed ? 'ASSEMBLY CONNECTED' : state.phase === 'aligned' ? 'AWAITING PLACEMENT' : 'READY TO EXPLORE'}`;
-  $('angle').value = Math.round(state.angle * 180 / Math.PI);
-  $('angle-value').value = `${Math.round(state.angle * 180 / Math.PI)}°`;
-  $('part-annotation').hidden = installed || failed;
-  $('annotation-text').textContent = state.selected === 'piston' ? 'PISTON + ROD / SELECTED' : 'PISTON + ROD';
+  $('cutaway-explanation').textContent = state.section ? 'CUTAWAY OPENS ONE BANK TO SHOW THE INTERNALS.' : 'FULL CASTING · SWITCH CUTAWAY ON TO LOOK INSIDE.';
+  $('part-annotation').hidden = state.parts.piston !== 'bench' || failed;
+  $('annotation-text').textContent = 'PISTON + ROD';
+  updateMotionUI();
 }
 function setFailure(message) {
   failed = true;
@@ -73,43 +124,57 @@ function setFailure(message) {
   $('loading').hidden = true;
   $('fallback').hidden = false;
   if (message) $('fallback-detail').textContent = message;
-  $('placement-target').hidden = true;
+  $('scene-locations').hidden = true;
+  $('placement-dock').hidden = true;
   $('part-annotation').hidden = true;
-  document.querySelectorAll('.inspector button, .view-controls button, #section, #angle').forEach((el) => { el.disabled = true; });
+  document.querySelectorAll('.inspector button, .view-controls button, #section, #angle, .placement-dock button, .location-marker').forEach((el) => { el.disabled = true; });
   $('feedback').textContent = 'The 3D view is unavailable. Reload the workshop to try again.';
+}
+function locationPoint(location) {
+  if (location === 'mainLine') return new THREE.Vector3(0, 0, .25);
+  if (location === 'mainCaps') return new THREE.Vector3(0, -.45, 1.64);
+  if (location === 'cylinder') return new THREE.Vector3(1.5, 1.5, MECHANICS.station);
+  if (location === 'crankpin') return new THREE.Vector3(...linkage(state.angle).crankpin);
+  return new THREE.Vector3(-1.3, 1.3, -.4);
 }
 function applyState() {
   engine.setSection(state.section);
-  engine.crankshaft.rotation.z = -state.angle;
-  if (state.phase === 'installed') {
+  const installed = state.parts.piston !== 'bench';
+  engine.crankshaft.position.copy(state.parts.crank === 'bench' ? crankBench : new THREE.Vector3());
+  engine.crankshaft.rotation.set(0, 0, -state.angle);
+  engine.mainCaps.position.copy(state.parts.mainCaps === 'bench' ? capsBench : new THREE.Vector3());
+  engine.mainCaps.rotation.set(0, state.parts.mainCaps === 'bench' ? Math.PI / 2 : 0, 0);
+  if (installed) {
     const { crankpin, wristpin } = linkage(state.angle);
     engine.piston.position.fromArray(wristpin);
     engine.piston.quaternion.setFromUnitVectors(yAxis, bankDirection);
     engine.rod.position.fromArray(crankpin);
-    const rodDirection = new THREE.Vector3().fromArray(wristpin).sub(engine.rod.position).normalize();
-    engine.rod.quaternion.setFromUnitVectors(yAxis, rodDirection);
+    const direction = new THREE.Vector3().fromArray(wristpin).sub(engine.rod.position).normalize();
+    engine.rod.quaternion.setFromUnitVectors(yAxis, direction);
   } else {
-    engine.piston.position.copy(benchPin);
-    engine.piston.quaternion.identity();
-    engine.rod.position.copy(benchRodBase);
-    engine.rod.quaternion.identity();
+    engine.piston.position.copy(benchPin); engine.piston.quaternion.identity();
+    engine.rod.position.copy(benchRodBase); engine.rod.quaternion.identity();
   }
-  targetRing.visible = state.phase === 'aligned';
-  for (const [part, materials] of selectionMaterials) {
-    for (const material of materials) {
-      material.emissive.setHex(part === state.selected && part !== 'block' ? 0x15709d : 0x000000);
-      material.emissiveIntensity = part === state.selected ? .18 : 0;
-    }
+  if (state.parts.rodCap === 'bench') {
+    engine.rodCap.position.copy(rodCapBench); engine.rodCap.quaternion.identity();
+  } else {
+    engine.rodCap.position.copy(engine.rod.position); engine.rodCap.quaternion.copy(engine.rod.quaternion);
   }
-  // Cache the workshop's static shadows. Moving installed internals do not cast
-  // animated shadows; their geometry/material lighting remains fully interactive.
-  const nextShadowState = `${state.phase}/${state.section}`;
+  const hint = getHint(state);
+  const indicated = state.phase === 'locate' && state.location ? state.location : hint.level >= 3 ? hint.location : null;
+  targetRing.visible = Boolean(indicated);
+  if (indicated) {
+    targetRing.position.copy(locationPoint(indicated));
+    targetRing.quaternion.setFromUnitVectors(bankDirection, indicated === 'cylinder' ? bankDirection : new THREE.Vector3(0, 0, 1));
+  }
+  for (const [part, materials] of selectionMaterials) for (const material of materials) {
+    material.emissive.setHex(part === state.selected ? 0x15709d : 0x000000);
+    material.emissiveIntensity = part === state.selected ? .18 : 0;
+  }
+  const nextShadowState = `${Object.values(state.parts).join('/')}/${state.section}/${state.testStarted}`;
   if (nextShadowState !== shadowState) {
-    for (const group of [engine.crankshaft, engine.piston, engine.rod]) {
-      group.traverse(child => { if (child.isMesh) child.castShadow = state.phase !== 'installed'; });
-    }
-    renderer.shadowMap.needsUpdate = true;
-    shadowState = nextShadowState;
+    for (const group of [engine.crankshaft, engine.piston, engine.rod, engine.rodCap]) group.traverse(child => { if (child.isMesh) child.castShadow = !state.testStarted; });
+    renderer.shadowMap.needsUpdate = true; shadowState = nextShadowState;
   }
   engine.group.updateMatrixWorld(true);
 }
@@ -121,18 +186,26 @@ function addWorkshop() {
   floor.position.y = -1.12;
   floor.receiveShadow = true;
   scene.add(floor);
-  const plinth = new THREE.Mesh(new RoundedBoxGeometry(6.6, .15, 5.1, 4, .055), baseMaterial);
-  plinth.position.set(.55, -1, .1);
+  const plinth = new THREE.Mesh(new RoundedBoxGeometry(7.8, .15, 6.7, 4, .055), baseMaterial);
+  plinth.position.set(.15, -1, .65);
   plinth.receiveShadow = true;
   plinth.castShadow = true;
   scene.add(plinth);
-  const trim = new THREE.Mesh(new RoundedBoxGeometry(6.62, .025, 5.12, 3, .035), new THREE.MeshStandardMaterial({ color: 0x536574, metalness: .9, roughness: .38 }));
+  const trim = new THREE.Mesh(new RoundedBoxGeometry(7.82, .025, 6.72, 3, .035), new THREE.MeshStandardMaterial({ color: 0x536574, metalness: .9, roughness: .38 }));
   trim.position.copy(plinth.position).y = -1.047;
   scene.add(trim);
   // Discrete supports keep the crankcase visibly above the presentation surface.
   for (const z of [-1.35, 1.35]) {
     const support = new THREE.Mesh(new RoundedBoxGeometry(1.8, .31, .24, 3, .04), new THREE.MeshStandardMaterial({ color: 0x0d151b, metalness: .65, roughness: .45 }));
     support.position.set(0, -.77, z); support.castShadow = true; support.receiveShadow = true; scene.add(support);
+  }
+  for (const z of [-1.64, 1.64]) {
+    const cradle = new THREE.Mesh(new RoundedBoxGeometry(.8, .525, .28, 3, .04), baseMaterial);
+    cradle.position.set(crankBench.x, -.6625, z); cradle.castShadow = true; scene.add(cradle);
+  }
+  for (const [position, width, depth] of [[capsBench, 3.8, 1.4], [rodCapBench, .8, .65]]) {
+    const tray = new THREE.Mesh(new RoundedBoxGeometry(width, .07, depth, 2, .035), baseMaterial);
+    tray.position.copy(position).y = -.89; tray.receiveShadow = true; scene.add(tray);
   }
   const pad = new THREE.Mesh(new THREE.CylinderGeometry(.56, .62, .08, 64), new THREE.MeshStandardMaterial({ color: 0x101c25, metalness: .65, roughness: .38 }));
   pad.position.set(benchPin.x, -.88, benchPin.z); pad.receiveShadow = true; scene.add(pad);
@@ -147,7 +220,7 @@ function addWorkshop() {
   c.font = '600 54px sans-serif'; c.fillStyle = '#c2d1d9'; c.fillText('ROCKET 400', 38, 84);
   c.font = '24px sans-serif'; c.fillStyle = '#7e9aaa'; c.fillText('ROTATING ASSEMBLY     /     PROJECT 442', 40, 138);
   const label = new THREE.Mesh(new THREE.PlaneGeometry(1.75, .328), new THREE.MeshStandardMaterial({ map: new THREE.CanvasTexture(plateCanvas), roughness: .55, metalness: .25 }));
-  label.rotation.x = -Math.PI / 2; label.position.set(-.45, -.918, 2.12); scene.add(label);
+  label.rotation.x = -Math.PI / 2; label.position.set(-.45, -.918, 3.63); scene.add(label);
   const ringMaterial = new THREE.MeshBasicMaterial({ color: 0x53caff, transparent: true, opacity: .95, depthTest: false });
   targetRing = new THREE.Group();
   const ring = new THREE.Mesh(new THREE.TorusGeometry(.36, .014, 8, 64), ringMaterial);
@@ -160,8 +233,8 @@ function addWorkshop() {
 }
 
 const views = {
-  workshop: { target: [.55, .48, .3], offset: [.5, 8.5, 8.8] },
-  front: { target: [.5, .55, .2], offset: [0, 2.4, 9.4] },
+  workshop: { target: [-.1, .4, .8], offset: [.5, 9.5, 10.5] },
+  front: { target: [0, .4, .6], offset: [0, 3.3, 12] },
   detail: { target: [.65, .65, 1.0], offset: [4.9, 2.7, 5.3] },
 };
 function setView(name = 'workshop') {
@@ -191,60 +264,70 @@ function resize() {
 }
 function positionAnnotations() {
   const w = viewport.clientWidth, h = viewport.clientHeight;
-  if (state.phase !== 'installed') {
+  if (state.parts.piston === 'bench') {
     projected.copy(benchPin).add(new THREE.Vector3(.2, .65, 0)).project(camera);
-    const el = $('part-annotation');
-    el.style.left = `${Math.min(w - 115, Math.max(15, (projected.x + 1) * w / 2))}px`;
-    el.style.top = `${Math.max(100, (1 - projected.y) * h / 2)}px`;
+    $('part-annotation').style.left = `${Math.min(w - 115, Math.max(15, (projected.x + 1) * w / 2))}px`;
+    $('part-annotation').style.top = `${Math.max(100, (1 - projected.y) * h / 2)}px`;
   }
-  if (state.phase === 'aligned') {
-    projected.copy(targetRing.position).project(camera);
-    $('placement-target').style.left = `${Math.min(w - 75, Math.max(75, (projected.x + 1) * w / 2))}px`;
-    $('placement-target').style.top = `${Math.min(h - 140, Math.max(120, (1 - projected.y) * h / 2))}px`;
-  }
-}
-function select(part, source = 'control') {
-  if (failed) return;
-  dispatch({ type: 'select', part }, part === 'piston' ? 'Inspect the wrist pin, rod and cap. Find the connection when you’re ready.' : `${part === 'block' ? 'Engine block' : 'Crankshaft'} selected. Orbit the view to explore its shape.`);
-  if (source === 'canvas' && matchMedia('(max-width: 760px)').matches) {
-    // Selection feedback remains in view without unexpectedly scrolling the page.
-    $('annotation-text').textContent = part === 'piston' ? 'PISTON + ROD / SELECTED' : 'PISTON + ROD';
+  const placed = [];
+  for (const button of document.querySelectorAll('.location-marker')) {
+    if (button.hidden) continue;
+    projected.copy(locationPoint(button.dataset.location)).project(camera);
+    let x = THREE.MathUtils.clamp((projected.x + 1) * w / 2, 28, w - 28);
+    let y = THREE.MathUtils.clamp((1 - projected.y) * h / 2, 140, h - 180);
+    for (let attempts = 0; attempts < 12 && placed.some(p => Math.hypot(p.x-x,p.y-y) < 48); attempts++) {
+      x = THREE.MathUtils.clamp(x + (attempts % 2 ? -52 : 52), 28, w - 28);
+      y = THREE.MathUtils.clamp(y - 30, 130, h - 165);
+    }
+    placed.push({x,y}); button.style.left = `${x}px`; button.style.top = `${y}px`;
   }
 }
-function place() {
-  if (state.phase !== 'aligned' || failed) return;
-  dispatch({ type: 'place' }, 'Connected. Turn the crank and follow the motion from journal to wrist pin.');
-  setView('detail');
+function select(part) { dispatch({ type: 'select', part }); }
+function seat() {
+  const oldParts = JSON.stringify(state.parts);
+  dispatch({ type: 'seat' });
+  if (JSON.stringify(state.parts) !== oldParts) setView('detail');
 }
+function inspectSelected() {
+  if (!state.selected || !camera || failed) return;
+  const targets = {block: new THREE.Vector3(0,.8,0), crank: state.parts.crank === 'bench' ? crankBench : new THREE.Vector3(), mainCaps: state.parts.mainCaps === 'bench' ? capsBench : new THREE.Vector3(0,-.3,.8), piston: engine.piston.position, rodCap: engine.rodCap.position};
+  controls.target.copy(targets[state.selected]);
+  camera.position.copy(controls.target).add(new THREE.Vector3(3.5,3.2,5.3));
+  controls.update(); currentView = 'inspection'; dirty = true;
+  document.querySelectorAll('.view-presets button').forEach(button => {button.classList.remove('active');button.setAttribute('aria-pressed','false');});
+  if (viewport.clientWidth < 580) viewport.scrollIntoView({behavior: 'instant', block:'start'});
+}
+function reset() { dispatch({type:'reset'}); setView('workshop'); }
 function wireControls() {
-  document.querySelectorAll('[data-part]').forEach((button) => button.addEventListener('click', () => select(button.dataset.part)));
-  $('primary-action').addEventListener('click', (event) => {
-    if (event.detail > 1) return; // A double tap must not advance two placement stages.
-    if (state.selected !== 'piston') return select('piston');
-    if (state.phase === 'aligned') return place();
-    dispatch({ type: 'align' }, 'The blue guide marks this proof’s cylinder. Seat the assembly, or cancel to keep inspecting.');
-    if (!state.section) dispatch({ type: 'section' });
-    if (viewport.clientWidth < 580) viewport.scrollIntoView({ behavior: reducedMotion.matches ? 'instant' : 'smooth', block: 'start' });
+  document.querySelectorAll('[data-part]').forEach(button => button.addEventListener('click', () => select(button.dataset.part)));
+  $('primary-action').addEventListener('click', () => {
+    dispatch({ type: 'begin-place' });
+    if (state.phase === 'locate' && viewport.clientWidth < 580) viewport.scrollIntoView({behavior: reducedMotion.matches ? 'instant' : 'smooth', block:'start'});
   });
-  $('placement-target').addEventListener('click', place);
-  $('cancel').addEventListener('click', () => dispatch({ type: 'cancel' }, 'Placement canceled. The assembly remains on the bench.'));
-  document.addEventListener('keydown', (event) => { if (event.key === 'Escape') dispatch({ type: 'cancel' }, 'Selection kept; placement canceled.'); });
-  $('play').addEventListener('click', () => {
-    if (!reducedMotion.matches) dispatch({ type: 'toggle-play' }, state.playing ? 'Motion paused. Step or drag the angle control to inspect a connection.' : 'Turning slowly. Every moving part follows the same crank angle.');
-  });
-  $('step').addEventListener('click', () => dispatch({ type: 'step' }, 'Advanced 15°. The rod stays connected at both ends.'));
-  $('angle').addEventListener('input', (event) => dispatch({ type: 'angle', angle: Number(event.target.value) * Math.PI / 180 }));
-  $('section').addEventListener('click', () => dispatch({ type: 'section' }));
-  $('reset').addEventListener('click', () => { dispatch({ type: 'reset' }, 'Exploration reset. The piston assembly is back on the bench.'); setView('workshop'); });
-  for (const name of ['workshop', 'front', 'detail']) $(`view-${name}`).addEventListener('click', () => setView(name));
+  document.querySelectorAll('[data-location]').forEach(button => button.addEventListener('click', () => dispatch({type:'location',location:button.dataset.location})));
+  for (const id of ['seat','dock-seat']) $(id).addEventListener('click', seat);
+  for (const id of ['cancel','dock-cancel']) $(id).addEventListener('click', () => dispatch({type:'cancel'}));
+  document.addEventListener('keydown', event => {if(event.key === 'Escape') dispatch({type:'cancel'});});
+  $('inspect-part').addEventListener('click', inspectSelected);
+  $('show-location').addEventListener('click', () => {if(state.location) {setView('detail');viewport.scrollIntoView({behavior:'instant',block:'start'});}});
+  document.querySelectorAll('[data-tool]').forEach(button => button.addEventListener('click', () => dispatch({type:'tool',tool:button.dataset.tool})));
+  document.querySelectorAll('[data-fastener]').forEach(button => button.addEventListener('click', () => dispatch({type:'fasten',index:Number(button.dataset.fastener)})));
+  $('hint').addEventListener('click', () => dispatch({type:'hint'}));
+  $('test').addEventListener('click', () => {dispatch({type:'test'});if(state.testStarted){setView('detail');viewport.scrollIntoView({behavior:'instant',block:'start'});}});
+  $('play').addEventListener('click', () => {if(!reducedMotion.matches)dispatch({type:'toggle-play'});});
+  $('step').addEventListener('click', () => dispatch({type:'step'}));
+  $('angle').addEventListener('input', event => dispatch({type:'angle',angle:Number(event.target.value)*Math.PI/180}));
+  $('section').addEventListener('click', () => dispatch({type:'section'}));
+  $('reset').addEventListener('click', reset); $('replay').addEventListener('click', reset);
+  for (const name of ['workshop','front','detail']) $(`view-${name}`).addEventListener('click', () => setView(name));
   $('home-view').addEventListener('click', () => setView('workshop'));
-  for (const [id, factor] of [['zoom-in', .84], ['zoom-out', 1.19]]) $(id).addEventListener('click', () => {
+  for (const [id,factor] of [['zoom-in',.84],['zoom-out',1.19]]) $(id).addEventListener('click', () => {
     const offset = camera.position.clone().sub(controls.target);
-    offset.setLength(THREE.MathUtils.clamp(offset.length() * factor, controls.minDistance, controls.maxDistance));
-    camera.position.copy(controls.target).add(offset); controls.update(); dirty = true;
+    offset.setLength(THREE.MathUtils.clamp(offset.length()*factor,controls.minDistance,controls.maxDistance));
+    camera.position.copy(controls.target).add(offset);controls.update();dirty=true;
   });
-  $('retry').addEventListener('click', () => location.reload());
-  reducedMotion.addEventListener('change', () => { if (reducedMotion.matches) state = { ...state, playing: false }; updateUI(); });
+  reducedMotion.addEventListener('change', () => {if(reducedMotion.matches)dispatch({type:'pause'});updateUI();});
+  document.addEventListener('visibilitychange', () => {if(document.hidden)dispatch({type:'pause'});});
 }
 function wirePicking() {
   const canvas = renderer.domElement;
@@ -310,7 +393,7 @@ function initialize() {
     const rim = new THREE.DirectionalLight(0x7bcbff, 2.2); rim.position.set(4, 4, -4); scene.add(rim);
     const fill = new THREE.DirectionalLight(0xd6eaff, .8); fill.position.set(1, 1, 6); scene.add(fill);
     engine = createEngine(); scene.add(engine.group);
-    for (const [part, groups] of [['block', [engine.block]], ['crank', [engine.crankshaft]], ['piston', [engine.piston, engine.rod]]]) {
+    for (const [part, groups] of [['block', [engine.block]], ['crank', [engine.crankshaft]], ['piston', [engine.piston, engine.rod]], ['mainCaps', [engine.mainCaps]], ['rodCap', [engine.rodCap]]]) {
       const materials = new Set();
       for (const group of groups) group.traverse((child) => {
         if (child.isMesh) { child.material = child.material.clone(); materials.add(child.material); }
@@ -320,7 +403,7 @@ function initialize() {
     addWorkshop();
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true; controls.dampingFactor = .09;
-    controls.enablePan = false; controls.minDistance = 5.2; controls.maxDistance = 15;
+    controls.enablePan = false; controls.minDistance = 3.8; controls.maxDistance = 19;
     controls.minPolarAngle = .25; controls.maxPolarAngle = Math.PI / 2 - .04;
     controls.rotateSpeed = .65; controls.zoomSpeed = .75;
     controls.addEventListener('change', () => { dirty = true; });
@@ -336,10 +419,11 @@ function initialize() {
       const delta = Math.min((now - last) / 1000, .05); last = now;
       controls.update();
       if (state.playing && !document.hidden) {
+        const wasTested = state.tested;
         state = transition(state, { type: 'tick', delta: delta * .62 });
         applyState();
-        $('angle').value = Math.round(state.angle * 180 / Math.PI);
-        $('angle-value').value = `${Math.round(state.angle * 180 / Math.PI)}°`;
+        if (!wasTested && state.tested) updateUI();
+        else updateMotionUI();
         dirty = true;
       }
       if (dirty && !document.hidden) {
@@ -358,17 +442,18 @@ function initialize() {
     setFailure();
   }
 }
-wireControls(); updateUI(); initialize();
+buildControls(); wireControls(); updateUI(); initialize();
 
 // Read-only diagnostics for reproducible validation, not a second state owner.
 Object.defineProperty(window, '__PROJECT442__', { value: Object.freeze({
   snapshot() {
     const positions = engine ? {
       piston: engine.piston.position.toArray(), rodBig: engine.rod.position.toArray(),
+      rodCap: engine.rodCap.position.toArray(), crank: engine.crankshaft.position.toArray(),
       rodSmall: engine.rod.localToWorld(new THREE.Vector3(0, MECHANICS.rodLength, 0)).toArray(),
     } : null;
     const bounds = viewport.getBoundingClientRect();
     const p = camera ? benchPin.clone().add(new THREE.Vector3(0, .15, 0)).project(camera) : null;
-    return { state: { ...state }, positions, failed, pistonScreen: p ? { x: bounds.left + (p.x + 1) * bounds.width / 2, y: bounds.top + (1 - p.y) * bounds.height / 2 } : null, metrics: { ...metrics, frameTimes: [...metrics.frameTimes] }, camera: camera?.position.toArray() };
+    return { state: structuredClone(state), positions, failed, pistonScreen: p ? { x: bounds.left + (p.x + 1) * bounds.width / 2, y: bounds.top + (1 - p.y) * bounds.height / 2 } : null, metrics: { ...metrics, frameTimes: [...metrics.frameTimes] }, camera: camera?.position.toArray() };
   },
 }) });

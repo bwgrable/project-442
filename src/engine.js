@@ -9,11 +9,15 @@ export function createEngine() {
   const crankshaft = new THREE.Group();
   const piston = new THREE.Group();
   const rod = new THREE.Group();
-  group.add(block, crankshaft, piston, rod);
+  const mainCaps = new THREE.Group();
+  const rodCap = new THREE.Group();
+  group.add(block, crankshaft, piston, rod, mainCaps, rodCap);
   block.name = 'Rocket V8 casting';
   crankshaft.name = 'Forged crankshaft';
   piston.name = 'Piston and wrist pin';
   rod.name = 'Connecting rod';
+  mainCaps.name = 'Matched main bearing caps';
+  rodCap.name = 'Matched connecting rod cap';
 
   const mat = {
     paint: new THREE.MeshStandardMaterial({ color: 0x204a55, metalness: .35, roughness: .62 }),
@@ -66,6 +70,16 @@ export function createEngine() {
     const g = new THREE.ExtrudeGeometry(s, { depth: length, bevelEnabled: false, curveSegments: segments / 4 });
     g.translate(0, 0, -length / 2);
     return g;
+  }
+  function bearingHalf(outer, inner, length, lower = false) {
+    // Exact Y=0 mating faces; both halves preserve the journal's open bore.
+    const end = lower ? -Math.PI : Math.PI;
+    const s = new THREE.Shape();
+    s.absarc(0, 0, outer, 0, end, lower);
+    s.lineTo(-inner, 0);
+    s.absarc(0, 0, inner, end, 0, !lower);
+    s.closePath();
+    return plate(s, length, 0);
   }
   function roundedShape(w, h, r) {
     const s = new THREE.Shape();
@@ -179,33 +193,49 @@ export function createEngine() {
       mesh(block, cylinder(.046, .055, 6), mat.steel, [side * .84, -.5, z], side === 1);
     }
   }
-  const webShape = new THREE.Shape();
-  webShape.moveTo(-.8, .57);
-  webShape.lineTo(-.8, -.45);
-  webShape.quadraticCurveTo(-.72, -.61, -.49, -.61);
-  webShape.lineTo(.49, -.61);
-  webShape.quadraticCurveTo(.72, -.61, .8, -.45);
-  webShape.lineTo(.8, .57);
-  webShape.lineTo(.43, .83);
-  webShape.lineTo(.32, .32);
-  webShape.lineTo(-.32, .32);
-  webShape.lineTo(-.43, .83);
-  webShape.closePath();
-  // Main bore through each web leaves the polished journals visible.
-  const mainHole = new THREE.Path();
-  mainHole.absarc(0, 0, .225, 0, Math.PI * 2, true);
-  webShape.holes.push(mainHole);
+  // Split on the main axis. With caps removed the lower saddles are genuinely
+  // open, rather than leaving a duplicate closed bearing inside the block.
+  const saddleShape = new THREE.Shape();
+  saddleShape.moveTo(-.8, 0);
+  saddleShape.lineTo(-.8, .57);
+  saddleShape.lineTo(-.43, .83);
+  saddleShape.lineTo(-.32, .32);
+  saddleShape.lineTo(.32, .32);
+  saddleShape.lineTo(.43, .83);
+  saddleShape.lineTo(.8, .57);
+  saddleShape.lineTo(.8, 0);
+  saddleShape.lineTo(.269, 0);
+  saddleShape.absarc(0, 0, .269, 0, Math.PI, false);
+  saddleShape.closePath();
+  const mainCapShape = new THREE.Shape();
+  mainCapShape.moveTo(-.8, 0);
+  mainCapShape.lineTo(-.8, -.45);
+  mainCapShape.quadraticCurveTo(-.72, -.61, -.49, -.61);
+  mainCapShape.lineTo(.49, -.61);
+  mainCapShape.quadraticCurveTo(.72, -.61, .8, -.45);
+  mainCapShape.lineTo(.8, 0);
+  mainCapShape.lineTo(.269, 0);
+  mainCapShape.absarc(0, 0, .269, 0, -Math.PI, true);
+  mainCapShape.closePath();
   for (const z of [-1.64, -.8, 0, .8, 1.64]) {
-    mesh(block, plate(webShape, .14, .025), mat.paint, [0, 0, z]);
-    mesh(block, ring(.267, .228, .17), mat.bronze, [0, 0, z]);
+    // No bore-edge bevel: the shell clears the .22 main journal by .008.
+    // .19 total depth retains the previous .01 axial throw/web clearance.
+    mesh(block, plate(saddleShape, .19, 0), mat.paint, [0, 0, z]);
+    mesh(mainCaps, plate(mainCapShape, .19, 0), mat.edge, [0, 0, z]);
+    mesh(block, bearingHalf(.267, .228, .17), mat.bronze, [0, 0, z]);
+    mesh(mainCaps, bearingHalf(.267, .228, .17, true), mat.bronze, [0, 0, z]);
     for (const x of [-.43, .43]) {
-      mesh(block, cylinder(.06, .1, 6), mat.steel, [x, -.47, z]);
+      // Representative cap hardware travels with the matched cap set.
+      mesh(mainCaps, cylinder(.037, .43, 16), mat.steel, [x, -.23, z]);
+      mesh(mainCaps, cylinder(.081, .018, 24), mat.black, [x, -.615, z]);
+      mesh(mainCaps, cylinder(.068, .08, 6), mat.journal, [x, -.655, z]);
     }
   }
   // Front timing cover has a rounded, profiled silhouette and a crank opening.
   const timing = roundedShape(1.39, 1.28, .32);
   const opening = new THREE.Path();
-  opening.absarc(0, -.14, .24, 0, Math.PI * 2, true);
+  // The .035 cover bevel must still clear the .22 front main journal.
+  opening.absarc(0, -.14, .27, 0, Math.PI * 2, true);
   timing.holes.push(opening);
   mesh(block, plate(timing, .13, .035), mat.edge, [0, .14, -1.84]);
   mesh(block, ring(.32, .23, .07), mat.deck, [0, 0, -1.95]);
@@ -275,26 +305,32 @@ export function createEngine() {
   }
 
   // Rod big end at (0,0,0), wrist end at (0,1.45,0), holes along Z.
-  mesh(rod, ring(.244, .17, .19), mat.forged);
-  mesh(rod, ring(.175, .164, .195), mat.bronze);
+  // A straight split through the crankpin center leaves a real open big end.
+  // rodCap shares this origin and must copy rod.position / rod.quaternion.
+  mesh(rod, bearingHalf(.244, .176, .19), mat.forged);
+  mesh(rodCap, bearingHalf(.244, .176, .19, true), mat.forged);
+  mesh(rod, bearingHalf(.175, .168, .195), mat.bronze);
+  mesh(rodCap, bearingHalf(.175, .168, .195, true), mat.bronze);
   mesh(rod, ring(.116, .077, .15), mat.forged, [0, 1.45, 0]);
   mesh(rod, ring(.084, .075, .16), mat.bronze, [0, 1.45, 0]);
   const beam = new THREE.Shape();
-  beam.moveTo(-.133, .17);
+  // Keep the beveled beam above the bearing pocket (.205-.012 > .176).
+  beam.moveTo(-.133, .205);
   beam.lineTo(-.075, 1.36);
   beam.lineTo(.075, 1.36);
-  beam.lineTo(.133, .17);
+  beam.lineTo(.133, .205);
   beam.closePath();
   mesh(rod, plate(beam, .09, .012), mat.forged);
   for (const z of [-.062, .062]) {
     mesh(rod, plate(roundedShape(.062, 1.07, .03), .018, .005), mat.steel, [0, .75, z]);
   }
-  for (const x of [-.202, .202]) {
-    mesh(rod, cylinder(.04, .23, 12), mat.steel, [x, -.035, 0]);
-    mesh(rod, cylinder(.059, .055, 6), mat.journal, [x, -.166, 0]);
+  // Bolt ears start at |X|=.18; neither they nor the shanks enter the bore.
+  for (const x of [-.22, .22]) {
+    mesh(rod, plate(roundedShape(.08, .08, .015), .19, 0), mat.forged, [x, .04, 0]);
+    mesh(rodCap, plate(roundedShape(.08, .08, .015), .19, 0), mat.forged, [x, -.04, 0]);
+    mesh(rodCap, cylinder(.032, .2, 12), mat.steel, [x, -.03, 0]);
+    mesh(rodCap, cylinder(.059, .055, 6), mat.journal, [x, -.166, 0]);
   }
-  const capSeam = mesh(rod, new THREE.BoxGeometry(.44, .012, .197), mat.black, [0, -.09, 0]);
-  capSeam.name = 'Rod cap split';
 
   // Bake static details by material and cutaway membership to keep draw calls modest.
   // Moving groups remain separate so the host owns all assembly transforms.
@@ -326,6 +362,8 @@ export function createEngine() {
   consolidate(crankshaft, false);
   consolidate(piston, false);
   consolidate(rod, false);
+  consolidate(mainCaps, false);
+  consolidate(rodCap, false);
   function setSection(enabled) {
     for (const part of sectionParts) part.visible = part.userData.sectionOnly ? enabled : !enabled;
   }
@@ -335,6 +373,8 @@ export function createEngine() {
     { object: crankshaft, part: 'crank' },
     { object: piston, part: 'piston' },
     { object: rod, part: 'piston' },
+    { object: mainCaps, part: 'mainCaps' },
+    { object: rodCap, part: 'rodCap' },
   ];
-  return { group, block, crankshaft, piston, rod, sectionParts, pickables, setSection };
+  return { group, block, crankshaft, piston, rod, mainCaps, rodCap, sectionParts, pickables, setSection };
 }

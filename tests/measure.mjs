@@ -1,13 +1,14 @@
 // Reproducible cloud-browser evidence. These numbers are NOT physical-phone results.
 import { chromium } from '@playwright/test';
 import { mkdir, writeFile } from 'node:fs/promises';
+import { assemble } from './helpers.mjs';
 const origin = process.env.PROOF_URL || 'http://127.0.0.1:4174';
-const directory = process.env.EVIDENCE_DIR || '/tmp/project442-artifacts';
+const directory = process.env.EVIDENCE_DIR || '/tmp/project442-gameplay-artifacts';
 await mkdir(directory, { recursive: true });
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium', args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 const results = { origin, browser: browser.version(), gpu: 'SwiftShader (software rendering)', physicalDevice: false, scenarios: [] };
 for (const [name, width, height, mobile] of [['desktop', 1440, 1080, false], ['mobile', 390, 844, true]]) {
-  const context = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 1, isMobile: mobile, hasTouch: mobile });
+  const context = await browser.newContext({ baseURL: origin, viewport: { width, height }, deviceScaleFactor: 1, isMobile: mobile, hasTouch: mobile });
   const page = await context.newPage();
   const errors = []; page.on('pageerror', e => errors.push(e.message));
   const cdp = await context.newCDPSession(page);
@@ -16,12 +17,16 @@ for (const [name, width, height, mobile] of [['desktop', 1440, 1080, false], ['m
   await page.goto(origin);
   await page.locator('[data-ready=true]').waitFor({ timeout: 30000 });
   await page.screenshot({ path: `${directory}/${name}-bench.png`, fullPage: true });
+  await page.screenshot({path: `${directory}/${name}-opening-viewport.png`});
   const initial = await page.evaluate(() => ({ readyMs: window.__PROJECT442__.snapshot().metrics.readyMs, bytes: performance.getEntriesByType('resource').reduce((n,r) => n + r.transferSize, 0), overflow: document.documentElement.scrollWidth > innerWidth }));
-  await page.getByRole('button', { name: 'Piston + connecting rod' }).click();
-  await page.getByRole('button', { name: 'Find the connection' }).click();
-  if (mobile) await page.waitForFunction(() => Math.abs(document.getElementById('viewport').getBoundingClientRect().top) < 3);
-  await page.screenshot({ path: `${directory}/${name}-alignment.png`, fullPage: true });
-  await page.locator('#placement-target').click();
+  await page.locator('#hint').click();
+  await page.locator('#hint').click();
+  await page.locator('#hint').click();
+  if (mobile) await page.locator('#viewport').scrollIntoViewIfNeeded();
+  await page.screenshot({path: `${directory}/${name}-hint.png`, fullPage: !mobile});
+  await page.locator('#reset').click();
+  await assemble(page);
+  await page.locator('#test').click();
   await page.locator('#angle').fill('135');
   if (mobile) await page.locator('#viewport').scrollIntoViewIfNeeded();
   await page.screenshot({ path: `${directory}/${name}-connected.png`, fullPage: true });
