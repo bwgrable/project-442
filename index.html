@@ -1,213 +1,67 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#080f1b"><title>PROJECT 442 — Rocket 400 Workshop</title>
-<style>
-:root{color-scheme:dark;--bg:#080e19;--panel:#111c2b;--panel2:#172537;--line:#29384b;--muted:#8c9fb4;--white:#e8eff5;--blue:#33c3ff;--bright:#92e5ff;--gold:#e7a85b}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -30%,#1b354c 0%,#080e19 60%);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--white);min-height:100svh;-webkit-tap-highlight-color:transparent}.shell{max-width:1300px;margin:auto;padding:18px 22px 36px}.topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:18px}.brand{display:flex;align-items:center;gap:13px}.brand-mark{font-weight:1000;letter-spacing:-.09em;font-style:italic;font-size:29px;color:var(--blue);line-height:1}.eyebrow{font-size:10px;font-weight:800;letter-spacing:.19em;color:#76a3c0}.brand-name{font-weight:850;letter-spacing:.02em;font-size:17px}.beta{border:1px solid #36526b;border-radius:99px;color:#a2c4da;padding:7px 11px;font-size:10px;font-weight:750;letter-spacing:.12em}.intro{display:flex;align-items:end;justify-content:space-between;gap:16px;margin:0 0 15px}.intro h1{font-size:clamp(27px,3.4vw,42px);letter-spacing:-.055em;margin:3px 0 5px;line-height:1.05}.intro p{color:var(--muted);font-size:13px;margin:0}.status{font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--bright);text-align:right}.status:before{content:'●';margin-right:8px;color:#49d8a8}.workarea{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;align-items:stretch}.stage{min-width:0;height:min(59vw,565px);min-height:360px;border:1px solid #33455d;border-radius:19px;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 42%,#234159 0%,#15293b 33%,#0d1827 71%,#0a111e 100%)}.stage:after{content:'';pointer-events:none;position:absolute;inset:0;box-shadow:inset 0 0 90px #07101bbb;border-radius:19px}.stage canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}.stage canvas:active{cursor:grabbing}.stage-label{position:absolute;top:18px;left:18px;pointer-events:none;z-index:2}.stage-label .small{font-size:10px;font-weight:850;letter-spacing:.17em;color:#7da9c5}.stage-label .big{font-size:19px;font-weight:850;letter-spacing:.04em;margin-top:4px}.stage-label .sub{font-size:11px;color:#acc2d4;margin-top:4px}.stage-bottom{z-index:2;position:absolute;bottom:16px;left:15px;right:15px;display:flex;align-items:end;justify-content:space-between;gap:10px}.hint{font-size:11px;color:#9ab1c3;background:#091626b3;border:1px solid #2b4154;border-radius:9px;padding:8px 11px}.toggles{display:flex;gap:7px}.tiny-btn{border:1px solid #42617b;background:#10273ac9;color:#d1e7f4;border-radius:9px;padding:9px 11px;font-weight:800;font-size:10px;letter-spacing:.05em;cursor:pointer}.tiny-btn.active{background:#124b64;border-color:#45c3ee;color:#bff0ff}#slowmo{border-color:#28718c;color:#b5e2f2}.sidebar{display:flex;flex-direction:column;gap:13px}.panel{background:linear-gradient(153deg,#182838,#101b2a);border:1px solid #304154;border-radius:16px;padding:18px}.panel-title{font-size:11px;font-weight:850;letter-spacing:.14em;color:#87a9bd;text-transform:uppercase;margin-bottom:12px}.progress-line{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}.progress-line strong{font-size:23px;letter-spacing:-.045em}.progress-line span{font-size:11px;color:#a0b5c4}.track{height:6px;background:#2a3949;border-radius:10px;overflow:hidden}.track>div{background:linear-gradient(90deg,#138ee3,#57d7ff);height:100%;width:0%;border-radius:10px;transition:width .6s}.selected-tag{color:var(--blue);font-size:10px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}.part-name{font-size:21px;font-weight:900;letter-spacing:-.045em;margin:5px 0 6px}.description{font-size:12px;color:#aabcca;line-height:1.55;min-height:48px}.primary{width:100%;border:0;border-radius:11px;padding:15px 14px;background:linear-gradient(100deg,#12a8ec,#42cfff);color:#052235;text-transform:uppercase;letter-spacing:.07em;font-size:12px;font-weight:950;cursor:pointer;box-shadow:0 7px 28px #0089d01e;transition:transform .15s,opacity .2s}.primary:hover:not(:disabled){transform:translateY(-1px)}.primary:disabled{background:#34465a;color:#899eaf;box-shadow:none;cursor:default}.secondary{width:100%;border:1px solid #42627a;background:#1c3346;color:#d4edf8;border-radius:10px;padding:12px;font-size:11px;text-transform:uppercase;letter-spacing:.07em;font-weight:850;cursor:pointer;margin-top:9px}.micro{color:#8da9bb;font-size:11px;line-height:1.6;margin-top:12px}.bolt-dots{display:flex;gap:9px;margin:11px 0}.bolt-dots i{height:23px;width:23px;border:2px solid #65778a;display:grid;place-items:center;border-radius:50%;font-style:normal;font-size:11px;color:#9db1c1}.bolt-dots i.done{border-color:#30c8ef;background:#17485c;color:#a6eaff}.inventory{margin-top:16px}.inventory-header{display:flex;align-items:baseline;justify-content:space-between;margin:0 0 11px}.inventory-header h2{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#b3c7d5;margin:0}.inventory-header span{color:#7f94a7;font-size:11px}.parts{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px}.part{min-height:115px;background:linear-gradient(155deg,#182739,#101a28);border:1px solid #34455a;border-radius:12px;padding:12px;cursor:pointer;text-align:left;color:var(--white);display:flex;flex-direction:column;justify-content:space-between;position:relative;transition:border-color .2s,transform .2s}.part:not(:disabled):hover{transform:translateY(-2px);border-color:#60b8df}.part.selected{border-color:#42c9ff;box-shadow:inset 0 0 0 1px #219ec9,0 0 26px #1099d31c}.part.completed{border-color:#2d6e75}.part:disabled{opacity:.48;cursor:default}.part-icon{font-size:26px;font-weight:200;color:#72b9d7;line-height:1.1}.part-no{font-size:9px;letter-spacing:.14em;color:#879bb0;font-weight:800}.part-name{font-size:12px;font-weight:800;letter-spacing:0;line-height:1.25}.part-state{font-size:10px;color:#8a9daf}.part.completed .part-state{color:#54d9ba}.footer{display:flex;justify-content:space-between;align-items:start;gap:20px;color:#7890a3;font-size:10px;line-height:1.6;margin-top:18px}.hidden{display:none!important}.gaugebox{margin-top:8px;padding:15px;border:1px solid #314b63;background:#0a1827;border-radius:13px}.rpm{font-size:46px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:-.065em;color:#a9e9ff}.rpm small{font-size:12px;letter-spacing:.1em;color:#86a9bf}.gauge-arc{height:7px;background:linear-gradient(90deg,#1aa0e2 0%,#3ad7ee 63%,#eda860 88%,#e66d5d 100%);border-radius:6px;position:relative;margin:9px 0 18px}.needle{width:3px;height:15px;position:absolute;top:-4px;background:white;border-radius:2px;left:0;transition:left .12s}.readouts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 14px}.readouts div{background:#1b3043;padding:10px;border-radius:9px}.readouts label{display:block;color:#849fb1;font-size:9px;font-weight:800;letter-spacing:.11em;margin-bottom:5px}.readouts strong{font-size:16px;font-weight:850}input[type=range]{accent-color:#41c7f5;width:100%;margin:10px 0 17px;cursor:pointer}.throttle-label{display:flex;justify-content:space-between;color:#94b6c9;font-size:11px;font-weight:700}.notice{position:absolute;top:77px;left:50%;transform:translateX(-50%);background:#092638ec;border:1px solid #3a8daf;color:#c5f1ff;border-radius:10px;padding:10px 16px;font-size:12px;min-width:max-content;z-index:4;pointer-events:none;opacity:0;transition:opacity .2s}.notice.show{opacity:1}.runmode .stage{border-color:#246685}.runmode .stage-label .small{color:#56d8f9}@media(max-width:900px){.workarea{grid-template-columns:1fr}.stage{height:440px;min-height:0}.sidebar{display:grid;grid-template-columns:1fr 1fr}.parts{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:590px){.shell{padding:14px 11px 28px}.topbar{margin-bottom:17px}.brand-mark{font-size:26px}.brand-name{font-size:15px}.beta{font-size:9px;padding:6px 8px}.intro{align-items:start}.intro h1{font-size:28px}.intro p{font-size:11px;max-width:265px;line-height:1.5}.status{font-size:9px;margin-top:9px;white-space:nowrap}.stage{height:365px;border-radius:14px}.stage-label{top:13px;left:13px}.stage-label .big{font-size:16px}.stage-label .sub{font-size:10px}.stage-bottom{left:10px;right:10px;bottom:10px}.hint{font-size:9px;padding:7px;max-width:100px}.tiny-btn{font-size:9px;padding:8px 7px}.sidebar{display:flex;gap:10px}.panel{padding:16px}.panel-title{margin-bottom:10px}.progress-line strong{font-size:19px}.part-name{font-size:19px}.description{min-height:0;margin:4px 0 12px}.micro{margin-top:9px}.inventory{margin-top:17px}.parts{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.part{min-height:100px;padding:11px}.part-icon{font-size:22px}.part .part-name{font-size:11px}.footer{font-size:9px}.rpm{font-size:38px}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
-</style></head>
-<body><main class="shell" id="shell">
-<header class="topbar"><div class="brand"><div class="brand-mark">442</div><div><div class="eyebrow">PROJECT</div><div class="brand-name">ROCKET WORKSHOP</div></div></div><div class="beta">PROTOTYPE 002 · MOBILE</div></header>
-<div class="intro"><div><div class="eyebrow">1969 OLDSMOBILE · 400 V8</div><h1>Build the legend.</h1><p>Assemble the heart of a classic, one component at a time.</p></div><div class="status" id="status">Workshop ready</div></div>
-<section class="workarea"><div class="stage" id="stage"><canvas id="gl" aria-label="Interactive lightweight V8 engine visualization. Drag to rotate, pinch to zoom."></canvas><div class="stage-label"><div class="small">ENGINE // 01</div><div class="big">OLDS ROCKET 400</div><div class="sub" id="stageSub">Open engine · assembly view</div></div><div class="notice" id="toast"></div><div class="stage-bottom"><div class="hint">↻ Drag to orbit · Pinch to zoom</div><div class="toggles"><button class="tiny-btn" id="xray" aria-pressed="false">◈ X-RAY</button><button class="tiny-btn" id="slowmo" aria-pressed="true">◷ SLOW</button><button class="tiny-btn" id="resetCamera">↺ RESET</button></div></div></div>
-<div class="sidebar"><div class="panel" id="buildPanel"><div class="panel-title">Workshop progress</div><div class="progress-line"><strong id="progressValue">0 / 6 installed</strong><span id="progressPercent">0% complete</span></div><div class="track"><div id="progressBar"></div></div><div style="height:18px"></div><div class="selected-tag" id="selectedTag">STEP 01 / 06</div><div class="part-name" id="selectedName">Crankshaft</div><div class="description" id="selectedDescription">The rotating backbone of the engine. Converts piston motion into rotation.</div><div id="bolts" class="hidden"><div class="bolt-dots" id="boltDots"></div></div><button class="primary" id="install">INSTALL CRANKSHAFT →</button><button class="secondary hidden" id="handTurn">↻ Hand-turn crankshaft</button><div class="micro" id="coach">Choose a component and watch it drop into place.</div></div><div class="panel hidden" id="testPanel"><div class="panel-title">Engine test stand · demo</div><div class="selected-tag" id="engineStatus">● IGNITION OFF</div><div class="gaugebox"><div class="rpm" id="rpm">0000 <small>RPM</small></div><div class="gauge-arc"><div class="needle" id="needle"></div></div><div class="throttle-label"><span>THROTTLE</span><span id="throttlePct">0%</span></div><input id="throttle" type="range" min="0" max="100" value="0" aria-label="Engine throttle"><div class="readouts"><div><label>OIL PRESSURE</label><strong id="oil">0 psi</strong></div><div><label>TEMP</label><strong id="temp">70 °F</strong></div></div><button class="primary" id="startStop">▶ START ENGINE</button><button class="secondary" id="sound">♫ Sound on</button><button class="secondary" id="backToBuild">← Back to workshop</button></div></div></section>
-<section class="inventory" id="inventory"><div class="inventory-header"><h2>Parts bench</h2><span>Tap a component to inspect</span></div><div class="parts" id="parts"></div></section><footer class="footer"><span>PROJECT 442 · A mechanical playground in progress.</span><span>Stylized proof of concept. Components, dimensions, sounds and test gauges are illustrative—not factory-verified specifications.</span></footer>
-</main>
-<script>
-(()=>{'use strict';
-const $=id=>document.getElementById(id);
-const parts=[
- {name:'Crankshaft',icon:'⟳',description:'The steel backbone of the engine. Its offset crank throws convert reciprocating motion into rotation.',coach:'Tap install to seat the crankshaft in the block.'},
- {name:'Connecting rods',icon:'╱╲',description:'Eight rods connect the pistons to the crankshaft. They transmit combustion forces to the rotating assembly.',coach:'Watch the connecting rods join the crank throws.'},
- {name:'Pistons',icon:'▤',description:'Eight pistons ride inside the angled cylinders. They move through intake, compression, power and exhaust strokes.',coach:'The pistons are grouped into one installation for this first prototype.'},
- {name:'Cylinder heads',icon:'▰',description:'The heads close the cylinders and house the valves. You’ll use a virtual torque tool to secure them.',coach:'After installation, tighten four highlighted fasteners to finish the step.'},
- {name:'Intake & carb',icon:'⬡',description:'The intake distributes air and fuel to the cylinders; the carburetor meters the mixture.',coach:'Install the intake manifold and carburetor above the V.'},
- {name:'Ignition & covers',icon:'⚡',description:'Finish the valvetrain covers and ignition details. Then take your build to the test stand.',coach:'One last assembly before your first start.'}
-];
-let installed=0,selected=0,bolts=0,runMode=false,engineOn=false,xray=false,slowmo=true,throttle=0,camYaw=.58,camPitch=.30,camDistance=10.7,installTime=-99,installedThisFrame=-1,turnTime=-99,noticeTimeout,ctxAudio=null,soundOn=true,osc=[],filter=null,gain=null,audioStarted=false;
-const notify=(s)=>{const el=$('toast');el.textContent=s;el.classList.add('show');clearTimeout(noticeTimeout);noticeTimeout=setTimeout(()=>el.classList.remove('show'),2400)};
-function updateUI(){const ready=installed===6&&bolts===4;$('progressValue').textContent=`${installed} / 6 installed`;$('progressPercent').textContent=`${Math.round(installed/6*100)}% complete`;$('progressBar').style.width=`${installed/6*100}%`;$('selectedTag').textContent=`STEP ${String(selected+1).padStart(2,'0')} / 06`;$('selectedName').textContent=parts[selected].name;$('selectedDescription').textContent=parts[selected].description;$('coach').textContent=installed===4&&bolts<4?'Heads need four fasteners tightened before you continue.':ready?'All assemblies complete. Time to hear it run.':parts[selected].coach;
-const btn=$('install');$('bolts').classList.toggle('hidden',!(installed>=4&&bolts<4));$('boltDots').innerHTML=Array.from({length:4},(_,i)=>`<i class="${i<bolts?'done':''}">${i<bolts?'✓':i+1}</i>`).join('');
-if(ready){btn.textContent='▶ OPEN TEST STAND';btn.disabled=false;}else if(installed===4&&bolts<4){btn.textContent=`⚙ TORQUE FASTENER ${bolts+1} / 4`;btn.disabled=false;}else if(selected<installed){btn.textContent='✓ ALREADY INSTALLED';btn.disabled=true;}else if(selected>installed){btn.textContent='LOCKED · COMPLETE PRIOR STEP';btn.disabled=true;}else {btn.textContent=`INSTALL ${parts[selected].name.toUpperCase()} →`;btn.disabled=false;}
-$('handTurn').classList.toggle('hidden',installed<1||runMode);$('buildPanel').classList.toggle('hidden',runMode);$('testPanel').classList.toggle('hidden',!runMode);$('inventory').classList.toggle('hidden',runMode);$('status').textContent=engineOn?'Engine running':ready?'Ready for ignition':runMode?'On test stand':installed===0?'Workshop ready':'Build in progress';$('stageSub').textContent=runMode?'Dynamometer · cutaway view':'Open engine · assembly view';$('shell').classList.toggle('runmode',runMode);
-$('parts').innerHTML=parts.map((p,i)=>`<button class="part ${i===selected?'selected':''} ${i<installed?'completed':''}" data-i="${i}" ${i>installed?'disabled':''} aria-label="${p.name}, ${i<installed?'installed':i===installed?'available':'locked'}"><span class="part-no">ASSEMBLY 0${i+1}</span><span class="part-icon">${p.icon}</span><span class="part-name">${p.name}</span><span class="part-state">${i<installed?'✓ Installed':i===installed?'● Ready to fit':'○ Locked'}</span></button>`).join('');
-$('parts').querySelectorAll('.part').forEach(b=>b.addEventListener('click',()=>{selected=Number(b.dataset.i);updateUI();}));}
-function install(){if(installed===6&&bolts===4){runMode=true;camYaw=.53;camPitch=.22;camDistance=10.4;xray=true;$('xray').classList.add('active');$('xray').setAttribute('aria-pressed','true');updateUI();notify('Ignition sequence ready');return;}if(installed===4&&bolts<4){bolts++;notify(`Fastener ${bolts} torqued ✓`);if(bolts===4){selected=4;notify('Cylinder heads secured — nice work.');}updateUI();return;}if(selected!==installed)return;installedThisFrame=installed;installTime=performance.now()/1000;installed++;selected=Math.min(installed,5);notify(`${parts[installed-1].name} installed ✓`);updateUI();}
-$('install').addEventListener('click',install);$('handTurn').addEventListener('click',()=>{turnTime=performance.now()/1000;notify('Crankshaft rotates through one full turn');});$('xray').addEventListener('click',()=>{xray=!xray;$('xray').classList.toggle('active',xray);$('xray').setAttribute('aria-pressed',String(xray));notify(xray?'X-ray view enabled':'Exterior view enabled');});$('slowmo').addEventListener('click',()=>{slowmo=!slowmo;$('slowmo').classList.toggle('active',slowmo);$('slowmo').setAttribute('aria-pressed',String(slowmo));notify(slowmo?'Slow motion enabled · 1/16 speed':'Real-time engine animation');});$('slowmo').classList.add('active');$('resetCamera').addEventListener('click',()=>{camYaw=.58;camPitch=.30;camDistance=10.7;notify('Camera reset');});$('backToBuild').addEventListener('click',()=>{setEngine(false);runMode=false;xray=false;$('xray').classList.remove('active');updateUI();});$('startStop').addEventListener('click',()=>setEngine(!engineOn));$('sound').addEventListener('click',()=>{soundOn=!soundOn;$('sound').textContent=soundOn?'♫ Sound on':'♫ Sound muted';updateSound();});$('throttle').addEventListener('input',e=>{throttle=Number(e.target.value)/100;$('throttlePct').textContent=`${Math.round(throttle*100)}%`;});
-function createSound(){if(audioStarted)return;try{ctxAudio=new(window.AudioContext||window.webkitAudioContext)();osc=[];filter=ctxAudio.createBiquadFilter();filter.type='lowpass';filter.frequency.value=220;gain=ctxAudio.createGain();gain.gain.value=0;filter.connect(gain);gain.connect(ctxAudio.destination);for(const [wave,mul,level] of [['sawtooth',1,.24],['triangle',.5,.29],['square',2,.07]]){let o=ctxAudio.createOscillator(),g=ctxAudio.createGain();o.type=wave;o.frequency.value=50*mul;g.gain.value=level;o.connect(g);g.connect(filter);o.start();osc.push({o,mul});}audioStarted=true;}catch(e){soundOn=false;$('sound').textContent='Sound unavailable';}}
-function updateSound(){if(!audioStarted||!ctxAudio)return;if(ctxAudio.state==='suspended')ctxAudio.resume().catch(()=>{});gain.gain.setTargetAtTime(engineOn&&soundOn?.29:0,ctxAudio.currentTime,.09);}
-function setEngine(on){if(on){createSound();if(ctxAudio?.state==='suspended')ctxAudio.resume().catch(()=>{});engineOn=true;$('startStop').textContent='■ STOP ENGINE';$('engineStatus').textContent='● IGNITION ON · RUNNING';$('engineStatus').style.color='#70e0bd';notify('Rocket 400 fired up!');}else{engineOn=false;$('startStop').textContent='▶ START ENGINE';$('engineStatus').textContent='● IGNITION OFF';$('engineStatus').style.color='#33c3ff';notify('Ignition off');}updateSound();updateUI();}
-
-// Lightweight canvas renderer: does not require WebGL or a GPU context.
-// Parts interface is initialized before graphics, so graphics cannot hide controls.
-updateUI();
-let rev=0,rpmCurrent=0,temperature=70;
-const canvas=$('gl');
-const pen=canvas.getContext('2d',{alpha:false});
-if(!pen){$('stageSub').textContent='Interactive parts available below; visualization unavailable here.';}
-const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
-const V=(a,b,c)=>[a,b,c];
-const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]];
-const mul=(a,v)=>a.map(n=>n*v);
-const norm=a=>{const h=Math.hypot(...a)||1;return a.map(v=>v/h)};
-const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
-const rgb=(h,m=1)=>{h=h.replace('#','');let r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);return `rgb(${clamp(Math.round(r*m),0,255)},${clamp(Math.round(g*m),0,255)},${clamp(Math.round(b*m),0,255)})`};
-let polys=[],screenW=1,screenH=1,centerX=0,centerY=0;
-function project(v){
-  let x=v[0],y=v[1],z=v[2];
-  const co=Math.cos(camYaw),si=Math.sin(camYaw),cp=Math.cos(camPitch),sp=Math.sin(camPitch);
-  let x1=co*x+si*z,z1=-si*x+co*z;
-  let y1=cp*y-sp*z1,z2=sp*y+cp*z1;
-  let dep=camDistance+z2;
-  let sc=Math.min(screenW*.85,screenH*1.12)*1.9/(dep+.01);
-  return [centerX+x1*sc,centerY-y1*sc,dep,sc];
-}
-function polygon(points,col,light=1,alpha=1,stroke){
- if(points.some(p=>!Number.isFinite(p[0])))return;
- let pp=points.map(project);const depth=pp.reduce((a,b)=>a+b[2],0)/pp.length;
- polys.push({pp,col,light,alpha,depth,stroke});
-}
-function box(c,size,color,angle=0,alpha=1){
- let [x,y,z]=c,[sx,sy,sz]=size.map(i=>i/2),ca=Math.cos(angle),sa=Math.sin(angle);
- let P=[];for(let a of [-1,1])for(let b of [-1,1])for(let d of [-1,1]){let yy=b*sy,zz=d*sz;P.push([x+a*sx,y+yy*ca-zz*sa,z+yy*sa+zz*ca]);}
- let f=[[0,1,3,2],[4,6,7,5],[0,4,5,1],[2,3,7,6],[0,2,6,4],[1,5,7,3]];
- let li=[.68,.92,.78,1.1,.56,.96];f.forEach((ix,j)=>polygon(ix.map(i=>P[i]),color,li[j],alpha));
-}
-function cyl(center,rad,len,col,ang=0,alpha=1,segs=10){
- let c=Math.cos(ang),s=Math.sin(ang),A=[],B=[];
- for(let j=0;j<segs;j++){
-  const t=j*2*Math.PI/segs,u=rad*Math.cos(t),v=rad*Math.sin(t),p=len/2;
-  A.push([center[0]+u,center[1]+p*c-v*s,center[2]+p*s+v*c]);
-  B.push([center[0]+u,center[1]-p*c-v*s,center[2]-p*s+v*c]);
- }
- for(let j=0;j<segs;j++)polygon([A[j],A[(j+1)%segs],B[(j+1)%segs],B[j]],col,.62+.37*Math.cos(j*6.28/segs),alpha);
- polygon(A,col,1.3,alpha);polygon([...B].reverse(),col,.64,alpha);
-}
-function tube(a,b,r,col,alpha=1){
- const y=norm([b[0]-a[0],b[1]-a[1],b[2]-a[2]]);let x=norm(cross([0,0,1],y));if(Math.hypot(...x)<.01)x=[1,0,0];let z=cross(x,y),N=7,A=[],B=[];
- for(let j=0;j<N;j++){let t=j*2*Math.PI/N;let d=add(mul(x,r*Math.cos(t)),mul(z,r*Math.sin(t)));A.push(add(a,d));B.push(add(b,d));}
- for(let j=0;j<N;j++)polygon([A[j],A[(j+1)%N],B[(j+1)%N],B[j]],col,.6+.36*Math.cos(j*6.28/N),alpha);
- polygon(A,col,1.15,alpha);polygon([...B].reverse(),col,.7,alpha);
-}
-function stageParts(t){
- polys=[];
- const steel='#90b5c9',dark='#294c63',block='#36687d',edge='#189bd0',gold='#d6a85f',cyan='#5ad9f4';
- // Floor, engine stand and mounting bracket
- box([0,-2.37,0],[5.25,.14,2.8],dark);
- for(let x of [-1.8,1.8])box([x,-2.3,0],[.14,.17,2.6],steel);
- box([0,-1.45,-.15],[.33,1.83,.33],dark);
- box([0,-1.6,.38],[.9,.18,.22],steel);
- // Cast engine block & two banks
- box([0,-.36,0],[4.5,.84,1.5],block,0,xray?.28:1);
- box([-2.30,-.24,0],[.17,.91,1.7],steel,0,xray?.4:1);
- box([2.30,-.24,0],[.17,.91,1.7],steel,0,xray?.4:1);
- const xs=[-1.58,-.54,.54,1.58];
- for(let s of [-1,1]){
-  box([0,.20,s*.65],[4.47,.44,.64],block,s*.65,xray?.25:1);
-  box([0,.48,s*.77],[4.47,.085,.72],edge,s*.65,xray?.30:1);
-  for(let x of xs)cyl([x,.57,s*.89],.27,.075,dark,s*.72,xray?.40:1,9);
- }
- // Pulley at nose and fan hub
- cyl([2.53,-.41,0],.44,.16,steel,Math.PI/2);
- cyl([2.67,-.41,0],.26,.2,'#cadee6',Math.PI/2);
- const prog=n=>installed>n?1:0;
- const rot=(engineOn?rev:(t-turnTime<1.2?(t-turnTime)/1.2*Math.PI*2:0));
- if(prog(0)){
-  tube([-2.32,-.40,0],[2.28,-.40,0],.125,'#b6cfde');
-  for(let i=0;i<5;i++)cyl([-2.08+i*1.05,-.41,0],.32,.17,steel,Math.PI/2);
-  for(let i=0;i<4;i++){
-   let ph=rot+[0,Math.PI/2,Math.PI*1.5,Math.PI][i];
-   cyl([xs[i],-.42+.22*Math.cos(ph),.22*Math.sin(ph)],.20,.29,gold,Math.PI/2);
-  }
- }
- // Rods and pistons rise and fall; their animation is tied to RPM.
- if(prog(1))for(let i=0;i<4;i++)for(let side of [-1,1]){
-  let phase=rot+[0,Math.PI/2,Math.PI*1.5,Math.PI][i]+(side<0?Math.PI:0);
-  let k=.18*Math.cos(phase),d=[0,.71,side*.71];
-  let P=[xs[i],.48+k,side*(.79+k*.48)];
-  let C=[xs[i],-.42+.22*Math.cos(phase),.22*Math.sin(phase)];
-  tube(C,add(P,mul(d,-.24)),.082,'#9ebccb');
-  if(prog(2)){
-   cyl(P,.31,.40,'#d2e5ed',side*.78,1,10);
-   cyl(add(P,mul(d,.15)),.318,.045,gold,side*.78,1,10);
-  }
- }
- if(prog(3))for(let side of [-1,1]){
-  box([0,1.17,side*1.17],[4.47,.50,1.05],'#578ca4',side*.78,xray?.25:1);
-  box([0,1.34,side*1.35],[4.26,.10,.76],'#a0cbd6',side*.78,xray?.4:1);
-  for(let x of xs)cyl([x,1.53,side*1.44],.085,.1,gold,side*.78,xray?.6:1,7);
- }
- if(prog(4)){
-  box([0,1.38,0],[3.85,.28,1.60],'#9fc7cf',0,xray?.35:1);
-  box([.76,1.66,0],[1.0,.32,1.0],gold,0,xray?.6:1);
-  cyl([.76,1.93,0],.47,.42,gold,0,xray?.62:1);
-  cyl([.76,2.19,0],.42,.12,steel,0,xray?.62:1);
- }
- if(prog(5)){
-  for(let side of [-1,1]){
-   box([0,1.62,side*1.52],[4.43,.28,.69],'#245c78',side*.79,xray?.16:1);
-   for(let x of xs)cyl([x,1.80,side*1.63],.045,.11,gold,side*.8,xray?.4:1,7);
-  }
-  cyl([-1.76,1.71,0],.20,.56,dark,0,xray?.35:1);
-  cyl([-1.76,2.08,0],.24,.19,'#c3513a',0,xray?.65:1);
-  for(let side of [-1,1])for(let x of xs)tube([-1.76,2.05,0],[x,1.73,side*1.64],.016,gold,xray?.55:1);
- }
- if(installed===2 && selected===2){
-  let pulse=.23+.13*Math.sin(t*3.7);
-  for(let s of [-1,1])for(let x of xs)cyl([x,.66,s*.82],.31,.41,cyan,s*.78,pulse,8);
- }
-}
-function paint(t){
- if(!pen)return;
- let rect=canvas.getBoundingClientRect();let w=Math.max(10,rect.width),h=Math.max(10,rect.height),scale=Math.min(window.devicePixelRatio||1,1.5);
- if(canvas.width!==Math.round(w*scale)||canvas.height!==Math.round(h*scale)){canvas.width=Math.round(w*scale);canvas.height=Math.round(h*scale);}
- screenW=w;screenH=h;centerX=w*.51;centerY=h*.56;
- pen.setTransform(scale,0,0,scale,0,0);
- const bg=pen.createRadialGradient(w*.52,h*.38,5,w*.52,h*.45,Math.max(w,h)*.75);
- bg.addColorStop(0,'#25485f');bg.addColorStop(.5,'#142c3f');bg.addColorStop(1,'#091523');pen.fillStyle=bg;pen.fillRect(0,0,w,h);
- pen.lineWidth=1;pen.strokeStyle='#2f566847';
- for(let i=-12;i<=12;i++){
-  let a=project([i*.7,-2.49,-10]),b=project([i*.7,-2.49,10]);
-  pen.beginPath();pen.moveTo(a[0],a[1]);pen.lineTo(b[0],b[1]);pen.stroke();
-  a=project([-10,-2.49,i*.7]);b=project([10,-2.49,i*.7]);
-  pen.beginPath();pen.moveTo(a[0],a[1]);pen.lineTo(b[0],b[1]);pen.stroke();
- }
- stageParts(t);polys.sort((a,b)=>b.depth-a.depth);
- for(let poly of polys){
-  pen.globalAlpha=poly.alpha;pen.fillStyle=rgb(poly.col,poly.light);
-  pen.beginPath();poly.pp.forEach((p,i)=>i?pen.lineTo(p[0],p[1]):pen.moveTo(p[0],p[1]));pen.closePath();pen.fill();
-  if(poly.alpha>.5){pen.strokeStyle='#051b2b5c';pen.lineWidth=.7;pen.stroke();}
- }
- pen.globalAlpha=1;
- if(installed===0){pen.fillStyle='#a4c9d7';pen.font='600 12px system-ui';pen.textAlign='center';pen.fillText('SELECT CRANKSHAFT • TAP INSTALL',w/2,h*.86);}
-}
-let last=performance.now()/1000,lastGauge=0,lastDraw=0;
-function frame(ms){
- const t=ms/1000,dt=clamp(t-last,0,.05);last=t;
- const target=engineOn?790+throttle*3350:0;
- rpmCurrent+=(target-rpmCurrent)*Math.min(1,dt*(engineOn?1.9:2.6));
- if(engineOn)rev+=dt*rpmCurrent/60*Math.PI*2*(slowmo?1/14:1);
- if(engineOn)temperature+=(185-temperature)*dt*.095;else temperature+=(70-temperature)*dt*.035;
- if(t-lastDraw>(engineOn?.037:.065)){lastDraw=t;try{paint(t);}catch(err){console.error('Renderer error',err);$('stageSub').textContent='Drawing paused. Parts controls still work.';}}
- if(t-lastGauge>.1){lastGauge=t;
-  $('rpm').innerHTML=`${String(Math.round(rpmCurrent)).padStart(4,'0')} <small>RPM</small>`;
-  $('needle').style.left=`${Math.min(98,rpmCurrent/5200*100)}%`;
-  $('oil').textContent=`${engineOn?Math.round(16+rpmCurrent*.01):0} psi`;
-  $('temp').textContent=`${Math.round(temperature)} °F`;
-  if(audioStarted&&ctxAudio){osc.forEach(({o,mul})=>o.frequency.setTargetAtTime(Math.max(25,rpmCurrent/60*4*mul),ctxAudio.currentTime,.1));filter.frequency.setTargetAtTime(120+rpmCurrent*.16,ctxAudio.currentTime,.1);}
- }
- requestAnimationFrame(frame);
-}
-requestAnimationFrame(frame);
-// Phone-friendly drag to orbit and pinch-to-zoom, pointer gestures only.
-let touches=new Map(),lastPinch=0;
-canvas.addEventListener('pointerdown',e=>{try{canvas.setPointerCapture(e.pointerId);}catch(_){} touches.set(e.pointerId,{x:e.clientX,y:e.clientY});lastPinch=0;});
-canvas.addEventListener('pointermove',e=>{
- if(!touches.has(e.pointerId))return;
- let p=touches.get(e.pointerId),dx=e.clientX-p.x,dy=e.clientY-p.y;
- touches.set(e.pointerId,{x:e.clientX,y:e.clientY});
- if(touches.size===1){camYaw+=dx*.009;camPitch=clamp(camPitch+dy*.008,-.25,1.15);}
- else if(touches.size===2){const a=[...touches.values()],dist=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);if(lastPinch)camDistance=clamp(camDistance*lastPinch/dist,5.4,16);lastPinch=dist;}
-});
-const finish=e=>{touches.delete(e.pointerId);lastPinch=0;};
-canvas.addEventListener('pointerup',finish);canvas.addEventListener('pointercancel',finish);
-canvas.addEventListener('wheel',e=>{e.preventDefault();camDistance=clamp(camDistance+Math.sign(e.deltaY)*.6,5.4,16);},{passive:false});
-})();
-</script></body></html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#10151b">
+  <meta name="description" content="An interactive look inside an Oldsmobile 400-inspired rotating assembly. Project 442 visual proof.">
+  <title>Project 442 — Inside the Rocket</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2310151b'/%3E%3Ctext x='7' y='41' fill='%234bc7ff' font-size='26' font-family='Arial' font-weight='bold'%3E442%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="masthead">
+      <a class="brand" href="./" aria-label="Project 442 home"><span class="brand-mark">442<span class="brand-slash"></span></span><span class="brand-copy">PROJECT<br><strong>THE WORKSHOP</strong></span></a>
+      <div class="edition"><span class="status-dot"></span> PROTOTYPE 003 <span class="edition-separator">/</span> <span class="edition-note">VISUAL PROOF</span></div>
+    </header>
+    <main>
+      <section class="intro" aria-labelledby="page-title">
+        <div><div class="eyebrow">1969 SPIRIT. A CLOSER LOOK.</div><h1 id="page-title">Inside the <em>Rocket.</em></h1></div>
+        <p>Explore the metal. Find the connection.<br>Bring the rotating assembly to life.</p>
+      </section>
+      <section class="workshop" aria-label="Interactive engine workshop">
+        <div class="viewport" id="viewport">
+          <div class="scene-label"><span class="eyebrow">OLDSMOBILE 400–INSPIRED</span><strong>Rotating assembly</strong><span class="scene-caption">ONE CYLINDER. EVERY CONNECTION.</span></div>
+          <div class="scene-badge" id="scene-badge"><span></span> CUTAWAY VIEW</div>
+          <div class="canvas-wrap" id="canvas-wrap"></div>
+          <div class="loading" id="loading" role="status"><span class="loading-ring"></span><strong>Opening the workshop</strong><span>Preparing the engine view…</span></div>
+          <div class="fallback" id="fallback" hidden role="alert"><span class="fallback-icon">442</span><h2>The 3D view couldn’t start.</h2><p id="fallback-detail">This workshop needs WebGL 2. Try an updated browser with graphics acceleration enabled.</p><button id="retry" type="button">Reload workshop</button></div>
+          <div class="part-annotation" id="part-annotation" aria-hidden="true"><span class="annotation-dot"></span><span id="annotation-text">PISTON + ROD</span></div>
+          <button class="placement-target" id="placement-target" hidden type="button" aria-label="Seat piston in selected cylinder"><span>+</span><strong>SEAT ASSEMBLY</strong></button>
+          <div class="view-controls" aria-label="Camera and view controls">
+            <div class="view-presets"><button id="view-workshop" class="active" aria-pressed="true" type="button">Workshop</button><button id="view-front" aria-pressed="false" type="button">Front</button><button id="view-detail" aria-pressed="false" type="button">Detail</button></div>
+            <div class="camera-buttons"><button id="zoom-in" aria-label="Zoom in" title="Zoom in" type="button">+</button><button id="zoom-out" aria-label="Zoom out" title="Zoom out" type="button">−</button><button id="home-view" aria-label="Reset camera" title="Reset camera" type="button">↺</button></div>
+          </div>
+          <div class="scene-footer"><span class="gesture-tip"><span class="orbit-icon">↻</span> Drag to orbit <i>·</i> Pinch to zoom</span><button id="section" aria-pressed="true" type="button"><span class="switch"></span> Cutaway</button></div>
+        </div>
+        <aside class="inspector" aria-label="Parts and assembly controls">
+          <div class="inspector-head"><span class="eyebrow">THE EXPLORATION</span><span class="chapter">01 / 01</span></div>
+          <h2>Metal in motion.</h2>
+          <p class="inspector-intro">Inspect the parts, seat the piston assembly, then turn the crank.</p>
+          <div class="part-list" aria-label="Choose a part to inspect">
+            <button type="button" class="part-card selected" data-part="block" aria-pressed="true"><span class="part-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="m8 18 9-8 15 4 8 10-7 15-17-4Z M8 18l16 6 16 0M24 24l-8 11 M24 24l8-10"/><ellipse cx="18" cy="17" rx="3" ry="2"/><ellipse cx="27" cy="19" rx="3" ry="2"/></svg></span><span><strong>Engine block</strong><small>Cast body · cutaway</small></span><span class="part-index">01</span></button>
+            <button type="button" class="part-card" data-part="crank" aria-pressed="false"><span class="part-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M5 33h8V20h7v9h8V15h8v9h7 M8 29v8m8-21v8m8 1v8m8-22v8m8 1v8"/></svg></span><span><strong>Crankshaft</strong><small>Offset journals · counterweights</small></span><span class="part-index">02</span></button>
+            <button type="button" class="part-card" data-part="piston" aria-pressed="false"><span class="part-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M15 7h18v15H15Zm0 4h18m-18 4h18m-12 7v11m6-11v11"/><circle cx="24" cy="37" r="6"/><circle cx="24" cy="37" r="2"/></svg></span><span><strong>Piston + connecting rod</strong><small id="piston-state">On the bench · ready to inspect</small></span><span class="part-index">03</span></button>
+          </div>
+          <div class="part-description"><div class="detail-heading"><span id="detail-type">THE FOUNDATION</span><span class="detail-rule"></span></div><p id="detail-copy">The block locates the cylinders and supports the crankshaft. The cutaway opens a window into the moving assembly.</p></div>
+          <div class="action-area">
+            <button id="primary-action" class="primary" type="button"><span id="action-text">Inspect piston + rod</span><span aria-hidden="true">→</span></button>
+            <button id="cancel" class="cancel" type="button" hidden>Cancel placement</button>
+            <div class="motion-controls" id="motion-controls" hidden>
+              <div class="motion-heading"><span>CRANK ANGLE</span><output id="angle-value" for="angle">45°</output></div>
+              <input id="angle" type="range" min="0" max="360" step="1" value="45" aria-label="Hand-turn crank angle">
+              <div class="motion-buttons"><button id="play" type="button">Turn crank</button><button id="step" type="button">Step 15°</button></div>
+            </div>
+            <p class="feedback" id="feedback" role="status" aria-live="polite">Start with any part. Take a closer look.</p>
+          </div>
+          <div class="inspector-bottom"><span id="assembly-status"><i></i> READY TO EXPLORE</span><button id="reset" type="button" aria-label="Reset entire exploration">Reset</button></div>
+        </aside>
+      </section>
+      <section class="notes" aria-label="About this visual proof"><div><span class="note-number">01</span><p><strong>One connection, understood.</strong> A single piston reveals how a rotating crank becomes reciprocating motion.</p></div><div><span class="note-symbol">↳</span><p><strong>A study, not a service manual.</strong> Geometry is Oldsmobile-inspired, not factory-verified. Dimensions, finish, and assembly steps are illustrative.</p></div></section>
+    </main>
+    <footer class="page-footer"><span>PROJECT 442 <span class="footer-dot">·</span> BUILT TO BE UNDERSTOOD.</span><span>VISUAL STUDY / 003</span></footer>
+  </div>
+  <noscript><p class="noscript">Enable JavaScript to explore the interactive 3D workshop.</p></noscript>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
