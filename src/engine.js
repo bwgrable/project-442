@@ -9,12 +9,14 @@ export function createEngine() {
   const crankshaft = new THREE.Group();
   const piston = new THREE.Group();
   const rod = new THREE.Group();
+  const wristPin = new THREE.Group();
   const mainCaps = new THREE.Group();
   const rodCap = new THREE.Group();
-  group.add(block, crankshaft, piston, rod, mainCaps, rodCap);
+  group.add(block, crankshaft, piston, rod, mainCaps, rodCap, wristPin);
   block.name = 'Rocket V8 casting';
   crankshaft.name = 'Forged crankshaft';
-  piston.name = 'Piston and wrist pin';
+  piston.name = 'Piston with open wrist bores';
+  wristPin.name = 'Separate wrist pin';
   rod.name = 'Connecting rod';
   mainCaps.name = 'Matched main bearing caps';
   rodCap.name = 'Matched connecting rod cap';
@@ -283,22 +285,31 @@ export function createEngine() {
   }
 
   // Piston origin is the wrist-pin center; local +Y points toward the crown.
-  // Lathed wall is hollow beneath the crown and includes three ring grooves.
+  // The crown/ring belt stops above the wrist bore. Two side skirt sectors
+  // leave actual windows at both pin ends; annular bosses define the bores.
   const profile = [
-    [.258, -.24], [.291, -.24], [.298, -.19], [.298, .095],
-    [.285, .095], [.285, .117], [.3, .117], [.3, .143],
-    [.283, .143], [.283, .164], [.3, .164], [.3, .192],
-    [.284, .192], [.284, .212], [.3, .212], [.3, .255],
-    [.289, .276], [0, .276], [0, .225], [.254, .225], [.258, -.24],
+    [.258, .095], [.298, .095], [.285, .095], [.285, .117],
+    [.3, .117], [.3, .143], [.283, .143], [.283, .164],
+    [.3, .164], [.3, .192], [.284, .192], [.284, .212],
+    [.3, .212], [.3, .255], [.289, .276], [0, .276],
+    [0, .225], [.254, .225], [.258, .095],
   ].map(([x, y]) => new THREE.Vector2(x, y));
   mesh(piston, new THREE.LatheGeometry(profile, 64), mat.aluminum);
+  const skirt = [[.258, -.24], [.291, -.24], [.298, -.19], [.298, .095], [.258, .095], [.258, -.24]]
+    .map(([x, y]) => new THREE.Vector2(x, y));
+  for (const start of [.36, Math.PI + .36]) {
+    mesh(piston, new THREE.LatheGeometry(skirt, 32, start, Math.PI - .72), mat.aluminum);
+  }
   for (const y of [.107, .153, .202]) {
     const r = mesh(piston, ring(.301, .283, .012), mat.ring, [0, y, 0]);
     r.rotation.x = Math.PI / 2;
   }
-  const wrist = mesh(piston, cylinder(.075, .57), mat.journal);
+  for (const z of [-.245, .245]) {
+    mesh(piston, ring(.112, .079, .08), mat.aluminum, [0, 0, z]);
+    mesh(piston, ring(.113, .079, .009), mat.black, [0, 0, z + Math.sign(z) * .043]);
+  }
+  const wrist = mesh(wristPin, cylinder(.075, .57), mat.journal);
   wrist.rotation.x = Math.PI / 2;
-  for (const z of [-.287, .287]) mesh(piston, ring(.091, .059, .009), mat.black, [0, 0, z]);
   // Two subtle valve reliefs are recessed-colored discs on the shallow dished crown.
   for (const x of [-.115, .115]) {
     mesh(piston, cylinder(.082, .002, 32), mat.deck, [x, .277, .02]);
@@ -311,8 +322,8 @@ export function createEngine() {
   mesh(rodCap, bearingHalf(.244, .176, .19, true), mat.forged);
   mesh(rod, bearingHalf(.175, .168, .195), mat.bronze);
   mesh(rodCap, bearingHalf(.175, .168, .195, true), mat.bronze);
-  mesh(rod, ring(.116, .077, .15), mat.forged, [0, 1.45, 0]);
-  mesh(rod, ring(.084, .075, .16), mat.bronze, [0, 1.45, 0]);
+  mesh(rod, ring(.116, .080, .15), mat.forged, [0, 1.45, 0]);
+  mesh(rod, ring(.084, .078, .16), mat.bronze, [0, 1.45, 0]);
   const beam = new THREE.Shape();
   // Keep the beveled beam above the bearing pocket (.205-.012 > .176).
   beam.moveTo(-.133, .205);
@@ -362,6 +373,7 @@ export function createEngine() {
   consolidate(crankshaft, false);
   consolidate(piston, false);
   consolidate(rod, false);
+  consolidate(wristPin, false);
   consolidate(mainCaps, false);
   consolidate(rodCap, false);
   function setSection(enabled) {
@@ -372,9 +384,10 @@ export function createEngine() {
     { object: block, part: 'block' },
     { object: crankshaft, part: 'crank' },
     { object: piston, part: 'piston' },
-    { object: rod, part: 'piston' },
+    { object: rod, part: 'rod' },
+    { object: wristPin, part: 'pin' },
     { object: mainCaps, part: 'mainCaps' },
     { object: rodCap, part: 'rodCap' },
   ];
-  return { group, block, crankshaft, piston, rod, mainCaps, rodCap, sectionParts, pickables, setSection };
+  return { group, block, crankshaft, piston, rod, wristPin, mainCaps, rodCap, sectionParts, pickables, setSection };
 }

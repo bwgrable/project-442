@@ -94,3 +94,30 @@ test('front cover and saddle clear the complete front main journal volume', () =
   // The cover is present outside the opening; this is not a hidden-cover test.
   assert.ok(hits([engine.block], [.4, 0, -2.1], [0, 0, 1], .5).length);
 });
+
+test('piston has actual open wrist bores and its separate pin fits both ends', () => {
+  const engine = model();
+  assert.ok(engine.wristPin?.isGroup);
+  assert.ok(engine.pickables.some(p => p.object === engine.wristPin && p.part === 'pin'));
+  const points = [[0, 0]];
+  for (const radius of [.05, .0749, .077]) {
+    for (let i = 0; i < 32; i++) {
+      const a = i * Math.PI / 16;
+      points.push([Math.cos(a) * radius, Math.sin(a) * radius]);
+    }
+  }
+  for (const [x, y] of points) for (const side of [-1, 1]) {
+    assert.equal(hits([engine.piston], [x, y, .5 * side], [0, 0, -side], 1).length, 0,
+      `Piston wrist bore blocked at ${x}, ${y}, side ${side}`);
+    assert.equal(hits([engine.rod], [x, y + 1.45, .3 * side], [0, 0, -side], .6).length, 0,
+      `Rod wrist bore blocked at ${x}, ${y}, side ${side}`);
+  }
+  for (const side of [-1, 1]) {
+    assert.ok(hits([engine.piston], [.1, 0, .5 * side], [0, 0, -side], 1).length, 'Boss rim must remain present');
+    assert.ok(hits([engine.wristPin], [0, 0, .5 * side], [0, 0, -side], 1).length, 'Separate solid pin must remain present');
+  }
+  engine.wristPin.children[0].geometry.computeBoundingBox();
+  const bounds = engine.wristPin.children[0].geometry.boundingBox;
+  assert.ok(Math.abs(bounds.max.z - bounds.min.z - .57) < 1e-6);
+  assert.ok(Math.abs(bounds.max.x - .075) < 1e-6);
+});

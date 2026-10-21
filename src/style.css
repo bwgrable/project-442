@@ -703,3 +703,22 @@ noscript {
   .scene-column > .motion-controls label { margin-top: 8px; }
   .scene-column > .motion-controls #turn-progress { margin: 8px 0 0; }
 }
+
+/* Joint controls stay beside the work, in document flow on narrow screens. */
+.joint-controls, .insertion-controls { padding: 12px 0; margin-bottom: 12px; border-bottom: 1px solid #36505a; }
+.joint-controls label { display:flex; justify-content:space-between; font-size:13px; }
+.joint-controls input { width:100%; min-height:44px; accent-color:#8edbe0; }
+.joint-controls p, .insertion-controls p { font-size:12px; color:#b1c7cf; margin:5px 0; }
+.insertion-controls div { display:flex; flex-wrap:wrap; gap:6px; }
+.insertion-controls button { min-height:44px; flex:1; font-size:12px; }
+.insertion-controls output { display:block; font-size:12px; margin-top:8px; }
+.scene-tools button { min-height:44px; }
+@media(max-width:600px) {
+ .intro { margin-bottom:14px; }
+ .intro h1 { font-size:27px; }
+ .intro .eyebrow { font-size:9px; }
+ .scene-tools { gap:4px; left:5px; right:5px; }
+ .scene-tools button { font-size:9px; padding:7px 6px; }
+ .manip-buttons { flex-wrap:wrap; }
+ .manip-buttons button { min-height:44px; }
+}
