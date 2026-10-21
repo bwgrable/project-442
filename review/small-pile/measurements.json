@@ -1,0 +1,44 @@
+{
+  "origin": "http://127.0.0.1:4174",
+  "browser": "154.0.8037.57",
+  "gpu": "SwiftShader software rendering",
+  "physicalDevice": false,
+  "network": {
+    "megabitsPerSecond": 10,
+    "latencyMs": 100
+  },
+  "scenarios": [
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 1080,
+      "readyMs": 2604.100000000093,
+      "resourceTransferBytes": 163677,
+      "overflow": false,
+      "sampleElapsedMs": 5037.5,
+      "renderedFrames": 10,
+      "averageRenderedFps": 1.9851116625310175,
+      "rafP95Ms": 716.5999999999985,
+      "triangles": 63794,
+      "drawCalls": 34,
+      "installedMeshLiftAndCancelPassed": true,
+      "errors": []
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 844,
+      "readyMs": 1631.1999999997206,
+      "resourceTransferBytes": 163677,
+      "overflow": false,
+      "sampleElapsedMs": 5337.100000000093,
+      "renderedFrames": 16,
+      "averageRenderedFps": 2.997882745311072,
+      "rafP95Ms": 816.5999999999985,
+      "triangles": 63794,
+      "drawCalls": 34,
+      "installedMeshLiftAndCancelPassed": true,
+      "errors": []
+    }
+  ]
+}

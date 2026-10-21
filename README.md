@@ -1,51 +1,38 @@
-# Project 442
+# Project 442 — Small pile / Prototype 004
 
-A mobile-first Three.js assisted challenge inspired by the 1969 Oldsmobile Rocket 400.
+Four loose parts, an engine block, and a connection to figure out. **Drag actual parts around the bench, roll them until they fit, and release to connect.** Once the assembly is connected, turn the crank and watch the piston move.
 
-**Build a connected rotating assembly, then turn it by hand to see how it works.** Inspect and choose a crankshaft, its matching main cap set, one piston/connecting-rod unit, and its matching rod cap. Choose mounting locations, seat the parts, select a fastening tool, and secure two representative fasteners per cap operation. Nothing automatically selects the next correct part or its destination.
+The crankshaft, matching main-cap set, representative piston/rod and rod cap are all available immediately. A tap selects only. Nearby fit feedback checks position, orientation and mechanically necessary prerequisites. No mounting-location menu, tool choice or fastening checklist. Optional hints advance only when requested.
 
-Hints are optional and advance only when requested: conceptual clue, direction, destination highlight, then walkthrough. Mistakes explain the issue and preserve progress. The hand-turn test stays locked until the assembly is connected and secured; pass it with a complete revolution using the slider, slow turning, or 15° steps.
+## Interaction
 
-The procedural model, materials, lighting and labels are authored locally. No backend, accounts, live AI, paid assets or external model downloads are used.
+- Drag a visible piece to move it continuously across the workbench. Use the selected-part roll buttons before dragging, or Q/E while holding it. Release checks the fit.
+- Drag empty space to orbit, or choose **Orbit view** to inspect without moving pieces. **Whole bench** recovers the framing. Pinch zoom is supported; adding a second finger during a part drag cancels it, then a fresh gesture can control the camera.
+- **Lift out** or dragging a connected part removes it and returns joined dependent pieces to the bench. Independently rearranged loose pieces stay where they were. Motion first returns to the inspection pose. **Undo** restores a consistent snapshot.
+- **Return to bench** recovers a selected piece. **Cancel** / Escape restores the pending pickup. Resize, backgrounding, focus loss and interrupted capture cancel unfinished placement. **Start over** resets parts, hints, history and motion.
+- **Move without dragging** supplies the same fit rules through named selection, pickup, directional controls, roll and drop. With the canvas focused: Space picks up; arrows move; Q/E roll; Enter drops; Escape cancels. There is no auto-solve control.
+- When all four parts connect, the slider, 15° steps and optional continuous turning drive the constrained mechanism. Reduced motion retains slider and stepping.
 
-## Scope and preparation
+## What is simplified
 
-Geometry and proportions are illustrative, **not factory-verified specifications or a repair procedure**. Bearings, piston rings and the wrist pin are prepared. Main caps are handled as one matching set; two fasteners represent each cap operation. Orientation and seating are simplified. There are no torque values, friction/load validation, combustion, or full-engine assembly. Other cylinders are outside this challenge, not mechanically invalid.
+This is a small spatial experiment, not a full engine or unrestricted six-axis CAD. Pieces move on a horizontal X/Z plane. Roll is adjustable; axial alignment and final seating height are preset. Snap distance is 0.65 illustrative scene units and roll tolerance is 12°. Bearings, rings and wrist pin are prepared. The main caps are one set; connections stand in for fastening. Proportions, casting and mechanical procedures are **illustrative, not factory-verified service data**. Other cylinders are outside the experiment.
 
-Cutaway deliberately opens one cylinder bank to reveal the mechanism. Switch **Cutaway** off for the modeled full casting. Its purpose is explained in the scene, and a preparation disclosure appears before the parts.
+The Three.js geometry and fixed-length slider-crank solver are reused from Prototype 003. No backend, accounts, live AI, external models, paid assets or new infrastructure are added.
 
-See [the recovered authorized plan](GAMEPLAY_PLAN.md), [mechanical assumptions and provenance](MECHANICAL_REFERENCES.md), and [gameplay verification](GAMEPLAY_VERIFICATION.md). The earlier [visual-proof evidence](VERIFICATION.md) is historical evidence for its original revision.
+See [the authorized plan and budgets](SMALL_PILE_PLAN.md), [verification and limitations](SMALL_PILE_VERIFICATION.md), and [mechanical assumptions](MECHANICAL_REFERENCES.md). Prototype 003's [gameplay report](GAMEPLAY_VERIFICATION.md) is historical evidence for its own revision, not this build.
 
-## Controls
+## Development
 
-Choose named parts or tap them in 3D. **Look closer** inspects a selection. **Choose mounting location** reveals equally styled location markers and equivalent HTML choices; selecting a location does not install anything. Use **Seat selected part** or the scene’s **Seat here** button to attempt installation. Cancel or Escape preserves installed progress.
+Pinned dependencies: Three.js 0.186.1, Vite 8.3.4, Playwright 1.64.1. Cloud runtime: Node 24. Install with `npm ci` when needed.
 
-For a seated cap, choose a tool and secure each representative fastener. **Test assembly** checks readiness. Turn, pause, step or drag the angle control. Reduced motion disables continuous turning and retains stepping. Backgrounding pauses motion until explicitly resumed. **Reset** and **Build it again** clear the entire challenge, including hints, tools, fasteners and motion.
+- `npm run dev` — development server.
+- `npm test` — kinematics, geometry and small-pile state tests.
+- `npm run build` — production bundle in `dist/`.
+- `npm run test:browser` — direct pointer/touch, fallback and recovery tests against the built bundle.
+- `npm run preview -- --port 4174`, then `node tests/measure.mjs` — labeled screenshots and cloud measurements. `PROOF_URL`, `EVIDENCE_DIR` and `CHROMIUM_PATH` can override defaults.
 
-Drag to orbit, pinch to zoom, or use the view presets and camera buttons. Camera gestures never place a part. Location markers intentionally remain visible through casting; choose a letter or the named HTML equivalent when surfaces are occluded. Portrait phone motion controls stay on screen during the test.
+Cloud browsers use Chromium with SwiftShader. Emulated viewports, synthetic touch/visibility/context events and short software-rendering samples do not establish physical iPhone/Safari/Android behavior or the five-minute hardware performance budget.
 
-## Development and validation
+`src/pile.js` owns all placement, orientation, dependencies, transactions, hints and motion state. `src/mechanics.js` contains the unchanged solver; `src/engine.js` contains the illustrative geometry. `src/main.js` integrates the scene and inputs. Tests never mutate the application through a hidden state-setting API; diagnostics expose read-only transforms/projections to drive actual input.
 
-Node 24 is used in the cloud workspace. Install pinned dependencies with `npm ci`, then:
-
-- `npm run dev`: development server.
-- `npm run build`: static production bundle in `dist/`.
-- `npm run preview`: serve the built bundle.
-- `npm test`: independent mechanics and assembly-state checks.
-- `npm run test:browser`: complete browser journeys against a built bundle.
-
-Browser checks use installed Chromium at `/usr/bin/chromium` unless `CHROMIUM_PATH` is supplied. They use SwiftShader software rendering. Viewport/touch emulation does not establish real iPhone, Safari, Android or hardware-GPU performance.
-
-For screenshots and cloud measurements, run the preview on port 4174, then `node tests/measure.mjs`. Override `PROOF_URL` and `EVIDENCE_DIR` if needed. The measurement script records a 10 Mbps/100 ms network profile and short animation samples; it does not replace the proposed five-minute phone test.
-
-## Structure and preservation
-
-- `src/engine.js`: geometry, matching removable caps, materials and cutaway.
-- `src/mechanics.js`: one assembly state owner and constrained slider-crank solver.
-- `src/main.js`: scene, picking, controls, hints and recovery presentation.
-- `src/style.css`: responsive workshop layout.
-- `tests/`: mechanics, state, browser journeys and measurement tooling.
-
-Gameplay is isolated on `dev/prototype-003-assisted-challenge`. Visual-proof branch `dev/prototype-003-visual-proof` stays at `45950d0212c463733b307fef3dc863004d840950`; its immutable Preview is https://project-442-ayjwuz05h-fat-dog.vercel.app/. Prototype 002 and remote `main` remain at `4d62d6471ad3c3886abc2e08c2130b383df7d8b3`.
-
-Only a separate development Preview is authorized. Do not merge to main, promote production, change billing/permissions, or purchase assets. The owner’s positive first iPhone feedback concerned the visual proof, not this new gameplay revision.
+Development branch: `dev/prototype-004-small-pile`. Main and the prior immutable previews are preserved. Production promotion is not part of this delivery.

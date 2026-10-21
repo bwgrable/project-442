@@ -1,85 +1,53 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#10151b">
-  <meta name="description" content="An interactive look inside an Oldsmobile 400-inspired rotating assembly. Project 442 assisted challenge.">
-  <title>Project 442 — Inside the Rocket</title>
-  <script>
-    // Register before the module request, including Vite's generated head script.
-    window.addEventListener('error', event => {
-      if (event.target?.tagName !== 'SCRIPT' || event.target.type !== 'module') return;
-      const recover = () => {
-        document.getElementById('loading').hidden = true;
-        document.getElementById('fallback').hidden = false;
-        document.getElementById('fallback-detail').textContent = 'The workshop files could not load. Check your connection and reload to try again.';
-        document.querySelectorAll('.inspector button, .view-controls button, #section, #angle').forEach(button => button.disabled = true);
-      };
-      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', recover, { once: true });
-      else recover();
-    }, true);
-  </script>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2310151b'/%3E%3Ctext x='7' y='41' fill='%234bc7ff' font-size='26' font-family='Arial' font-weight='bold'%3E442%3C/text%3E%3C/svg%3E">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101920"><meta name="description" content="Project 442: a small pile of parts, a rotating assembly, and room to figure it out.">
+<title>Project 442 — The small pile</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23101920'/%3E%3Ctext x='5' y='42' fill='%2387d5dc' font-size='27'%3E442%3C/text%3E%3C/svg%3E">
+<script>
+window.addEventListener('error', event => {
+ if(event.target?.tagName!=='SCRIPT'||event.target.type!=='module')return;
+ const recover=()=>{document.getElementById('loading').hidden=true;document.getElementById('fallback').hidden=false;document.getElementById('fallback-detail').textContent='The workshop files could not load. Check your connection and reload.';document.querySelectorAll('button,input').forEach(el=>{if(el.id!=='retry')el.disabled=true;});};
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',recover,{once:true});else recover();
+},true);
+</script>
 </head>
 <body>
-  <div class="app-shell">
-    <header class="masthead">
-      <a class="brand" href="./" aria-label="Project 442 home"><span class="brand-mark">442<span class="brand-slash"></span></span><span class="brand-copy">PROJECT<br><strong>THE WORKSHOP</strong></span></a>
-      <div class="edition"><span class="status-dot"></span> PROTOTYPE 003 <span class="edition-separator">/</span> <span class="edition-note">ASSISTED CHALLENGE</span></div>
-    </header>
-    <main>
-      <section class="intro" aria-labelledby="page-title">
-        <div><div class="eyebrow">1969 SPIRIT. A CLOSER LOOK.</div><h1 id="page-title">Inside the <em>Rocket.</em></h1></div>
-        <p>Choose. Connect. Understand.<br>A small assembly, a real mechanical payoff.</p>
-      </section>
-      <section class="workshop" aria-label="Interactive engine workshop">
-        <div class="viewport" id="viewport">
-          <div class="scene-label"><span class="eyebrow">OLDSMOBILE 400–INSPIRED</span><strong>Rotating assembly</strong><span class="scene-caption" id="cutaway-explanation">CUTAWAY OPENS ONE BANK TO SHOW THE INTERNALS.</span></div>
-          <div class="scene-badge" id="scene-badge"><span></span> CUTAWAY VIEW</div>
-          <div class="canvas-wrap" id="canvas-wrap"></div>
-          <div class="loading" id="loading" role="status"><span class="loading-ring"></span><strong>Opening the workshop</strong><span>Preparing the engine view…</span></div>
-          <div class="fallback" id="fallback" hidden role="alert"><span class="fallback-icon">442</span><h2>The 3D view couldn’t start.</h2><p id="fallback-detail">This workshop needs WebGL 2. Try an updated browser with graphics acceleration enabled.</p><button id="retry" type="button" onclick="location.reload()">Reload workshop</button></div>
-          <div class="part-annotation" id="part-annotation" aria-hidden="true"><span class="annotation-dot"></span><span id="annotation-text">PISTON + ROD</span></div>
-          <div id="scene-locations" aria-label="Mounting locations"></div>
-          <div class="scene-scope">One representative cylinder · remaining cylinders outside this challenge</div>
-          <div class="view-controls" aria-label="Camera and view controls">
-            <div class="view-presets"><button id="view-workshop" class="active" aria-pressed="true" type="button">Workshop</button><button id="view-front" aria-pressed="false" type="button">Front</button><button id="view-detail" aria-pressed="false" type="button">Detail</button></div>
-            <div class="camera-buttons"><button id="zoom-in" aria-label="Zoom in" title="Zoom in" type="button">+</button><button id="zoom-out" aria-label="Zoom out" title="Zoom out" type="button">−</button><button id="home-view" aria-label="Reset camera" title="Reset camera" type="button">↺</button></div>
-          </div>
-          <div class="scene-footer"><span class="gesture-tip"><span class="orbit-icon">↻</span> Drag to orbit <i>·</i> Pinch to zoom</span><button id="section" aria-pressed="true" type="button"><span class="switch"></span> Cutaway</button></div>
-        </div>
-        <aside class="inspector" aria-label="Parts and assembly controls">
-          <div class="inspector-head"><span class="eyebrow">THE CHALLENGE</span><span class="chapter" id="progress-count">0 / 4 SEATED</span></div>
-          <h2>Make the connection.</h2>
-          <p class="inspector-intro">Build a connected rotating assembly, then turn it by hand to see how it works.</p>
-          <details class="preparation"><summary>Before you begin · prepared bearings &amp; rings</summary><p>Bearings, piston rings and the wrist pin are prepared. One cylinder represents the assembly; the others are outside this challenge. The main cap set is grouped, and two fasteners represent each cap operation. Seating and fastening are simplified, with no torque specification. Proportions are illustrative. This is not a repair procedure.</p></details>
-          <div class="part-list" id="part-list" aria-label="Choose a part to inspect"></div>
-          <div class="part-description"><div class="detail-heading"><span id="detail-type">THE BENCH</span><span class="detail-rule"></span></div><p id="detail-copy">Explore the parts and decide what belongs where. Choose any component to inspect it.</p><button type="button" id="inspect-part" class="quiet-button" hidden>Look closer</button></div>
-          <div class="action-area">
-            <button id="primary-action" class="primary" type="button" hidden><span id="action-text">Choose mounting location</span><span aria-hidden="true">→</span></button>
-            <div id="location-panel" hidden><div class="detail-heading">WHERE DOES THIS PART BELONG?</div><p class="control-note">Choose a location here or its letter in the 3D view. Markers remain visible through the casting.</p><div id="location-list" class="choice-list"></div><button id="seat" type="button" class="primary">Seat selected part</button><button id="show-location" type="button" class="quiet-button">View selected location</button></div>
-            <button id="cancel" class="cancel" type="button" hidden>Cancel placement</button>
-            <div id="fastener-panel" hidden><div class="detail-heading">SECURE THE MATCHING CAP</div><p class="control-note">Choose a tool, then secure both representative fasteners. No torque values are simulated.</p><div class="tool-list" aria-label="Choose fastening tool"><button type="button" data-tool="socket" aria-pressed="false">Socket wrench</button><button type="button" data-tool="screwdriver" aria-pressed="false">Screwdriver</button><button type="button" data-tool="mallet" aria-pressed="false">Mallet</button></div><div class="fastener-list"><button type="button" data-fastener="0">Fastener A · open</button><button type="button" data-fastener="1">Fastener B · open</button></div></div>
-            <p class="feedback" id="feedback" role="status" aria-live="polite">Choose any component to inspect it.</p>
-            <div class="hint-panel"><button id="hint" type="button" class="quiet-button">Need a hint?</button><span id="hint-level"></span><div id="hint-content" hidden><strong id="hint-title"></strong><p id="hint-copy"></p></div></div>
-            <div class="test-panel"><button type="button" id="test" class="test-button">Test assembly</button><p id="test-status">The test checks that the assembly is connected and secured.</p></div>
-            <div class="motion-controls" id="motion-controls" hidden>
-              <div class="motion-heading"><span>HAND-TURN TEST</span><output id="angle-value" for="angle">45°</output></div>
-              <input id="angle" type="range" min="0" max="360" step="1" value="45" aria-label="Hand-turn crank angle">
-              <div class="motion-buttons"><button id="play" type="button">Turn crank</button><button id="step" type="button">Step 15°</button></div>
-              <div id="turn-progress" role="status">Turn through one full revolution.</div>
-            </div>
-            <div id="completion" class="completion" hidden><strong>Connected. Secured. In motion.</strong><p>You turned a complete revolution. The crankpin circles; the rod keeps its length; the piston follows the bore.</p><button type="button" id="replay">Build it again</button></div>
-          </div>
-          <div class="inspector-bottom"><span id="assembly-status">READY TO EXPLORE</span><button id="reset" type="button" aria-label="Reset entire challenge">Reset</button></div>
-        </aside>
-      </section>
-      <section class="notes" aria-label="About this challenge"><div><span class="note-number">01</span><p><strong>One connection, understood.</strong> A single piston reveals how a rotating crank becomes reciprocating motion.</p></div><div><span class="note-symbol">↳</span><p><strong>A study, not a service manual.</strong> Geometry is Oldsmobile-inspired, not factory-verified. Dimensions, finish, and assembly steps are illustrative.</p></div></section>
-    </main>
-    <footer class="page-footer"><span>PROJECT 442 <span class="footer-dot">·</span> BUILT TO BE UNDERSTOOD.</span><span>ASSISTED CHALLENGE / 003</span></footer>
-  </div>
-  <noscript><p class="noscript">Enable JavaScript to explore the interactive 3D workshop.</p></noscript>
-  <script type="module" src="/src/main.js"></script>
-</body>
-</html>
+<header class="masthead"><a href="./" class="brand" aria-label="Project 442 home">442<span>/</span></a><span class="wordmark">PROJECT 442<br><b>THE WORKSHOP</b></span><span class="edition">EXPERIMENT 004 <i>·</i> SMALL PILE</span></header>
+<main>
+<div class="intro"><div><span class="eyebrow">FOUR PARTS. YOUR HANDS.</span><h1>A little pile.<br class="mobile-break"> <em>A working connection.</em></h1></div><p>Drag. Roll. Connect. Then turn the crank.</p></div>
+<section class="workshop" aria-label="Small pile assembly workshop">
+<div class="scene-column">
+<div id="viewport" class="viewport">
+<div class="scene-top"><span>ROCKET 400–INSPIRED<br><b id="scene-status">0 / 4 connected</b></span><span class="scene-note">Illustrative geometry<br>One representative cylinder</span></div>
+<div id="canvas-wrap"></div><div id="part-labels" aria-hidden="true"></div>
+<div class="loading" id="loading" role="status"><span class="spinner"></span>Opening the bench…</div>
+<div class="fallback" id="fallback" role="alert" hidden><h2>The 3D view couldn’t start.</h2><p id="fallback-detail">This workshop needs WebGL 2. Try an updated browser with graphics acceleration enabled.</p><button id="retry" onclick="location.reload()">Reload workshop</button></div>
+<div id="fit-feedback" class="fit-feedback" role="status" hidden></div>
+<div class="scene-tools"><button id="camera-mode" aria-pressed="false">Orbit view</button><button id="home-view">Whole bench</button><button id="section" aria-pressed="true">Cutaway</button></div>
+</div>
+<div id="motion-controls" class="motion-controls" hidden><span class="eyebrow">YOUR ASSEMBLY MOVES</span><p>Turn one full revolution. Watch the rod and piston stay connected.</p><label for="angle">Crank angle <output id="angle-value">0°</output></label><input id="angle" type="range" min="0" max="360" value="0" aria-label="Hand-turn crank angle"><div class="motion-buttons"><button id="play">Turn crank</button><button id="step">Step 15°</button></div><p id="turn-progress" role="status"></p></div>
+<div class="manipulation" id="manipulation">
+<div class="selection-line"><strong id="selected-name">Grab a piece.</strong><span id="roll-value">Drag a part · drag empty space to orbit</span></div>
+<div class="manip-buttons"><button id="rotate-left" aria-label="Roll selected part left 15 degrees" disabled>↶ 15°</button><button id="rotate-right" aria-label="Roll selected part right 15 degrees" disabled>15° ↷</button><button id="remove" disabled>Lift out</button><button id="undo" disabled>Undo</button><button id="cancel" hidden>Cancel</button></div>
+<p id="feedback" role="status" aria-live="polite">Everything is on the bench. Pick something up and see where it fits.</p>
+</div>
+</div>
+<aside class="inspector" aria-label="Assembly support controls">
+<div class="panel-title"><span class="eyebrow">ON THE BENCH</span><button class="quiet" id="reset">Start over</button></div>
+<p class="aside-intro">No list to follow.<br> Look at the shapes. Try a connection.</p>
+<div id="part-list" class="part-list"></div>
+<div class="selection-actions"><button id="inspect" disabled>Look closer</button><button id="recover" disabled>Return to bench</button></div>
+<details id="alternative" class="alternative"><summary>Move without dragging</summary><p>Select a part, then Pick up. Move it across the bench, roll it and drop. The same fit rules apply.</p><button id="pickup" disabled>Pick up selected part</button><div class="move-grid"><button data-move="0,-0.25" aria-label="Move toward back of bench">Back ↑</button><button data-move="-0.25,0" aria-label="Move left on bench">← Left</button><button data-move="0.25,0" aria-label="Move right on bench">Right →</button><button data-move="0,0.25" aria-label="Move toward front of bench">Front ↓</button></div><button id="drop">Drop here</button><p class="keyboard-note">Arrow keys move · Q/E roll · Enter drops · Escape cancels. Focus the 3D view to use shortcuts.</p></details>
+<div class="hint-panel"><button id="hint">Want a hint?</button><span id="hint-level">OPTIONAL</span><div id="hint-content" hidden><strong id="hint-title"></strong><p id="hint-copy"></p></div></div>
+
+<div id="completion" class="completion" hidden><strong>You made it move.</strong><p>Take it apart, try another fit, or keep watching.</p></div>
+<details class="preparation"><summary>What this small experiment simplifies</summary><p>Parts move across a horizontal work plane. Roll is adjustable; axial orientation and final seating height are preset. Bearings, rings and wrist pin are prepared. Main caps move as a set; connections stand in for fastening. This is illustrative geometry, not factory dimensions or a service procedure. Other cylinders are outside this experiment.</p></details>
+<p class="gesture-note">Touch: one finger moves a part or orbits empty space. A second finger cancels a part drag; lift both fingers, then pinch to zoom. Scroll using the page outside the 3D view.</p>
+</aside>
+</section>
+</main><footer>PROJECT 442 <span>SMALL PILE / 004</span></footer>
+<noscript>Enable JavaScript to use the interactive workshop.</noscript>
+<script type="module" src="/src/main.js"></script>
+</body></html>

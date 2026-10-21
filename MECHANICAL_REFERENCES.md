@@ -11,8 +11,8 @@ No factory-reference CAD, Rocket 400 dimensions, torque specifications or engine
 | Piston origin / rod endpoint | Wrist pin; local rod endpoint Y=1.45 | Explicit scene origins | World coordinates compared in browser tests |
 | Matching caps | Five main caps grouped; one rod cap copied with rod transform | Authored split geometry | Open mating halves, matching bearing shells and fasteners; real part identity/orientation not validated |
 | Bearings, rings and wrist pin | Already prepared; orientation preset | Explicit challenge abstraction | No installation or tolerance claim |
-| Fastening | Two representative operations per cap set / rod cap; socket wrench | Gameplay abstraction | No real torque, bolt sequence, stretching or preload simulation |
-| Seating | Discrete validated placement | Gameplay abstraction | No physical insertion, force or collision simulation |
+| Connection | Spatial snap replaces fastening in Prototype 004 | Gameplay abstraction | No tool selection, real torque, bolt sequence, stretching or preload simulation |
+| Seating | Continuous X/Z work-plane dragging, adjustable roll, validated snap; axial orientation and final height preset | Gameplay abstraction | No physical insertion, force or collision simulation |
 | Other cylinders | Visually present, outside the challenge | Bounded scope | Other cylinder locations are not represented as mechanically invalid |
 | Surface finish, casting, counterweights | Procedural approximation | Authored model; preserved visual-proof style | Not factory CAD or verified historical finish |
 
