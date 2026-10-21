@@ -19,7 +19,7 @@ for(const touch of [false,true])test(`${touch?'phone touch':'desktop mouse'} bui
 
 test('wrong order, orientation, unpinned movement and partial insertion stay recoverable',async({page})=>{
  await ready(page);let d=await startDrag(page,'pin');await moveToFit(page,'pin',d);await release(page,d);expect((await snapshot(page)).state.parts.pin.status).toBe('loose');await page.locator('#recover').click();
- d=await startDrag(page,'rod');await moveToFit(page,'rod',d);await release(page,d);expect((await snapshot(page)).state.parts.rod.status).toBe('loose');await expect(page.locator('#feedback')).toContainText('Roll');await page.locator('#recover').click();
+ await selectMesh(page,'rod');for(let i=0;i<4;i++)await page.locator('#rotate-right').click();d=await startDrag(page,'rod');await moveToFit(page,'rod',d);await release(page,d);expect((await snapshot(page)).state.parts.rod.status).toBe('loose');await expect(page.locator('#fit-feedback')).toContainText('25°');await page.locator('#recover').click();
  await fitPart(page,'rod');let before=(await snapshot(page)).state.parts;d=await startDrag(page,'piston');await moveTo(page,d,2,1.5);expect((await snapshot(page)).state.parts.rod.status).toBe('loose');expect((await snapshot(page)).state.parts.rod.x).toBe(before.rod.x);await page.keyboard.press('Escape');await release(page,d);expect((await snapshot(page)).state.parts).toEqual(before);
  await page.locator('#engine-view').click();d=await startDrag(page,'piston');await moveToFit(page,'piston',d);await release(page,d);expect((await snapshot(page)).state.parts.piston.status).toBe('loose');await expect(page.locator('#feedback')).toContainText('wrist pin');await page.locator('#undo').click();await page.locator('#home-view').click();
  await fitPart(page,'pin');await insertPin(page,false,.45);expect((await snapshot(page)).state.parts.pin.status).toBe('aligned');expect((await snapshot(page)).state.parts.pin.depth).toBeCloseTo(.45,5);await expect(page.locator('#joint-controls')).toBeHidden();
@@ -55,3 +55,33 @@ test('WebGL context loss and initialization failure provide recovery',async({pag
  await ready(page);await page.locator('canvas').evaluate(el=>el.dispatchEvent(new Event('webglcontextlost',{cancelable:true})));await expect(page.locator('#fallback')).toBeVisible();await expect(page.locator('#reset')).toBeDisabled();await expect(page.locator('#retry')).toBeEnabled();await page.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){return String(type).includes('webgl')?null:original.call(this,type,...args);};});await page.reload();await expect(page.locator('#fallback')).toBeVisible();await expect(page.locator('#retry')).toBeEnabled();
 });
 test('failed application bundle has independent recovery',async({page})=>{await page.route('**/assets/*.js',route=>route.abort('failed'));await page.goto('/');await expect(page.locator('#fallback')).toBeVisible();await expect(page.locator('#fallback-detail')).toContainText('files could not load');await expect(page.locator('#retry')).toBeEnabled();});
+
+for(const touch of [false,true])test(`${touch?'touch':'mouse'} visually aligned initial rod fits without hidden roll correction`,async({browser})=>{
+ const context=await browser.newContext({viewport:touch?{width:390,height:844}:{width:1440,height:1080},deviceScaleFactor:1,isMobile:touch,hasTouch:touch});const page=await context.newPage();await ready(page);
+ let d=await startDrag(page,'piston',touch);await moveTo(page,d,1.8,1.4);await release(page,d);
+ d=await startDrag(page,'rod',touch,true);let cursor={x:d.p.x+8,y:d.p.y+2};
+ // Align the actual projected small eye with the actual piston joint, without reading fit targets or changing roll.
+ for(let i=0;i<4;i++){
+  const [eye,bore]=await page.evaluate(()=>[window.__PROJECT442__.jointScreen('rod'),window.__PROJECT442__.jointScreen('piston')]);
+  cursor={x:cursor.x+bore.x-eye.x,y:cursor.y+bore.y-eye.y};await moveScreen(page,d,cursor);await page.evaluate(()=>new Promise(requestAnimationFrame));
+ }
+ const before=await snapshot(page);expect(before.state.parts.rod.roll).toBe(30);await expect(page.locator('#fit-feedback')).toContainText('Release');
+ const direction=before.positions.rodBig.map((v,i)=>v-before.positions.rodSmall[i]);await release(page,d);let s=await snapshot(page);expect(s.state.parts.rod.status).toBe('fitted');expect(s.state.pivot).toBe(30);expect(s.state.parts.pin.status).toBe('loose');
+ expect(Math.hypot(...s.positions.rodBig.map((v,i)=>v-s.positions.rodSmall[i]-direction[i]))).toBeLessThan(1e-8);
+ await expect(page.locator('#fit-feedback')).toBeVisible();await expect(page.locator('#fit-feedback')).toContainText('Rod fitted');await expect(page.locator('#fit-feedback')).toContainText('wrist pin');
+ await page.screenshot({path:`/tmp/rod-fit-after-${touch?'mobile':'desktop'}.png`});
+ await fitPart(page,'pin',touch);await insertPin(page,touch);s=await snapshot(page);jointCenters(s);expect(s.state.pivot).toBe(30);
+ await page.locator('#unpin').click();s=await snapshot(page);expect(s.state.parts.rod.status).toBe('fitted');expect(s.state.pivot).toBe(30);
+ await fitPart(page,'pin',touch);await insertPin(page,touch);await installUnit(page,touch);await page.locator('#angle').fill('360');jointCenters(await snapshot(page));expect((await snapshot(page)).state.tested).toBe(true);await context.close();
+});
+
+for(const touch of [false,true])test(`${touch?'touch':'mouse'} fresh scene single small-eye drag fits at initial angle`,async({browser})=>{
+ const context=await browser.newContext({viewport:touch?{width:390,height:844}:{width:1440,height:1080},deviceScaleFactor:1,isMobile:touch,hasTouch:touch});const page=await context.newPage();await ready(page);
+ const [p,eye,bore]=await page.evaluate(()=>[window.__PROJECT442__.pickPoint('rod',true),window.__PROJECT442__.jointScreen('rod'),window.__PROJECT442__.jointScreen('piston')]);
+ expect(Math.hypot(p.x-eye.x,p.y-eye.y)).toBeLessThan(20);
+ const end={x:p.x+bore.x-eye.x,y:p.y+bore.y-eye.y};let cdp;
+ if(touch){cdp=await context.newCDPSession(page);await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{...p,id:0}]});}
+ else{await page.mouse.move(p.x,p.y);await page.mouse.down();}
+ const d={p,cdp,touch};await moveScreen(page,d,end);await release(page,d);
+ const s=await snapshot(page);expect(s.state.parts.rod.status).toBe('fitted');expect(s.state.pivot).toBe(30);expect(s.state.parts.pin.status).toBe('loose');await expect(page.locator('#fit-feedback')).toContainText('Rod fitted');await context.close();
+});

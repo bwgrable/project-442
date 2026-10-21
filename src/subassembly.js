@@ -42,7 +42,7 @@ export function targetFor(s, id) {
 export function poseFor(s, id) {
   const p = s.parts[id];
   if (!p) return null;
-  const roll = id === 'rod' && pinned(s) ? s.parts.piston.roll + s.pivot : p.roll;
+  const roll = id === 'rod' && (p.status === 'fitted' || pinned(s)) ? s.parts.piston.roll + s.pivot : p.roll;
   const a = roll * Math.PI / 180;
   return { ...p, roll, y: BENCH_Y + (id === 'pin' && p.status === 'aligned' ? PIN_TRAVEL * (1 - p.depth) : 0),
     ...(id === 'rod' ? { bigEnd: { x: p.x + Math.sin(a) * MECHANICS.rodLength, z: p.z + Math.cos(a) * MECHANICS.rodLength } } : {}) };
@@ -53,12 +53,14 @@ export function fit(s, id = s.selected) {
   const distance = Math.hypot(p.x - target.x, p.z - target.z);
   const angleError = Math.abs(norm(p.roll - (id === 'rod' ? s.parts.piston.roll : 0)));
   const radius = id === 'piston' ? .48 : id === 'rodCap' ? .4 : .3;
-  let reason = distance > radius + 1e-10 ? 'position' : angleError > 12 + 1e-10 && id !== 'pin' ? 'orientation' : 'ready';
+  const tolerance = id === 'rod' ? 65 : 12;
+  const degreesNeeded = Math.max(0, angleError - tolerance);
+  let reason = distance > radius + 1e-10 ? 'position' : angleError > tolerance + 1e-10 && id !== 'pin' ? 'orientation' : 'ready';
   if (id === 'piston' && !pinned(s)) reason = 'prerequisite';
   if (id === 'piston' && pinned(s) && Math.abs(norm(s.pivot)) > 12) reason = 'pivot';
   if (id === 'rod' && installed(s) || id === 'pin' && (s.parts.rod.status === 'loose' || installed(s)) || id === 'rodCap' && !installed(s)) reason = 'prerequisite';
-  const text = { position: 'Move closer to the matching connection.', orientation: 'Roll the part to align the connection.', prerequisite: id === 'piston' ? 'Fit the rod and insert the separate wrist pin before carrying the unit into the cylinder.' : id === 'pin' ? 'Fit the rod into the piston before aligning the pin.' : id === 'rodCap' ? 'Install the pinned unit in the cylinder before fitting its cap.' : 'Return the unit to the bench first.', pivot: 'Swing the rod back into line before installing the unit.', ready: id === 'pin' ? 'Release to align, then drag along the pin axis to insert it.' : 'The connection fits. Release to connect.' };
-  return { near: distance <= radius * 2, ready: reason === 'ready', reason, message: text[reason], target, distance, angleError };
+  const text = { position: id === 'rod' ? 'Move the rod’s small round eye into the piston wrist bore; the open big end connects to the crank.' : 'Move closer to the matching connection.', orientation: id === 'rod' ? `Turn the rod toward the piston skirt by at least ${Math.ceil(degreesNeeded)}°.` : 'Roll the part to align the connection.', prerequisite: id === 'piston' ? 'Fit the rod and insert the separate wrist pin before carrying the unit into the cylinder.' : id === 'pin' ? 'Fit the rod into the piston before aligning the pin.' : id === 'rodCap' ? 'Install the pinned unit in the cylinder before fitting its cap.' : 'Return the unit to the bench first.', pivot: 'Swing the rod back into line before installing the unit.', ready: id === 'pin' ? 'Release to align, then drag along the pin axis to insert it.' : 'The connection fits. Release to connect.' };
+  return { near: distance <= (id === 'rod' ? MECHANICS.rodLength + .3 : radius * 2), ready: reason === 'ready', reason, message: text[reason], target, distance, angleError, degreesNeeded };
 }
 function breakFit(s) {
   const parts = copyParts(s.parts);
@@ -68,13 +70,13 @@ function breakFit(s) {
 }
 function carry(s, x, z, roll = s.parts.piston.roll) {
   const parts = copyParts(s.parts);
-  for (const id of ['piston', 'rod', 'pin']) Object.assign(parts[id], { x, z, roll });
+  for (const id of ['piston', 'rod', 'pin']) Object.assign(parts[id], { x, z, roll: id === 'rod' ? norm(roll + s.pivot) : roll });
   return { ...s, parts };
 }
 function bench(s) {
   let next = resetMotion(s);
   if (installed(s)) {
-    next = carry(next, PARTS.piston.start.x, PARTS.piston.start.z, 0);
+    next = carry({ ...next, pivot: 0 }, PARTS.piston.start.x, PARTS.piston.start.z, 0);
     next.parts.piston.status = 'loose';
   } else next = { ...next, parts: copyParts(next.parts) };
   if (next.parts.rodCap.status === 'joined') next.parts.rodCap = { ...PARTS.rodCap.start, status: 'loose' };
@@ -128,7 +130,8 @@ export function transition(s, a = {}) {
     }
     case 'pivot': {
       if (!pinned(s) || installed(s) || s.drag || !Number.isFinite(a.delta) || a.delta % 360 === 0) return s;
-      return remember(s, { ...s, pivot: norm(s.pivot + a.delta), playing: false });
+      const pivot = norm(s.pivot + a.delta);
+      return remember(s, { ...s, pivot, playing: false, parts: { ...s.parts, rod: { ...s.parts.rod, roll: norm(s.parts.piston.roll + pivot) } } });
     }
     case 'drop': {
       if (!s.drag) return s;
@@ -141,11 +144,14 @@ export function transition(s, a = {}) {
           next = message(next, 'Wrist pin inserted. Carry the unit or swing the rod.', 'success');
         } else next = message(next, 'Pin partly inserted. Continue along its axis to finish.');
       } else if (result.ready) {
-        if (id === 'rod') Object.assign(next.parts.rod, result.target, { roll: s.parts.piston.roll, status: 'fitted' });
+        if (id === 'rod') {
+          Object.assign(next.parts.rod, result.target, { status: 'fitted' });
+          next.pivot = norm(s.parts.rod.roll - s.parts.piston.roll);
+        }
         if (id === 'pin') Object.assign(next.parts.pin, result.target, { roll: 0, depth: 0, status: 'aligned' });
-        if (id === 'piston') { next = carry(next, result.target.x, result.target.z, 0); next.parts.piston.status = 'installed'; next.pivot = 0; }
+        if (id === 'piston') { next = carry({ ...next, pivot: 0 }, result.target.x, result.target.z, 0); next.parts.piston.status = 'installed'; }
         if (id === 'rodCap') Object.assign(next.parts.rodCap, result.target, { roll: 0, status: 'joined' });
-        next = message(next, id === 'pin' ? 'Pin aligned. Drag down its axis to insert it.' : 'Connection fitted.', 'success');
+        next = message(next, id === 'pin' ? 'Pin aligned. Drag down its axis to insert it.' : id === 'rod' ? 'Rod fitted in piston. Slide the separate wrist pin through to hold it.' : 'Connection fitted.', 'success');
       } else next = message(next, result.message, 'error');
       return remember(s, next, s.drag.before);
     }
@@ -155,8 +161,8 @@ export function transition(s, a = {}) {
       if (s.drag || !pinned(s) && s.parts.pin.status !== 'aligned') return s;
       let next = bench(s);
       next.parts.pin = { ...PARTS.pin.start, status: 'loose' };
-      next.parts.rod.status = 'fitted'; next.pivot = 0;
-      next.parts.rod.roll = next.parts.piston.roll;
+      next.parts.rod.status = 'fitted';
+      next.parts.rod.roll = norm(next.parts.piston.roll + next.pivot);
       return remember(s, message(next, 'Pin removed. The rod is temporarily fitted; moving either part separates it.'));
     }
     case 'remove': {
@@ -164,7 +170,7 @@ export function transition(s, a = {}) {
       if (!valid(id) || s.drag) return s;
       let next = id === 'rodCap' ? { ...resetMotion(s), parts: copyParts(s.parts) } : bench(s);
       if (pinned(next) && id !== 'rodCap') {
-        next = carry(next, PARTS.piston.start.x, PARTS.piston.start.z, 0); next.pivot = 0;
+        next = carry({ ...next, pivot: 0 }, PARTS.piston.start.x, PARTS.piston.start.z, 0); next.pivot = 0;
       } else {
         if (id === 'piston' || id === 'rod') next = breakFit(next);
         next.parts[id] = { ...PARTS[id].start, status: 'loose' };
@@ -187,7 +193,7 @@ export function transition(s, a = {}) {
   }
 }
 const clues = {
-  rod: ['Look for two matching small openings.', 'The rod small end belongs between the piston bosses.', 'Fit the small end at the piston’s current wrist center.', 'Move the rod to the piston, match its roll, then release.'],
+  rod: ['Look for two matching small openings.', 'The rod small end belongs between the piston bosses.', 'Fit the small end at the piston’s current wrist center.', 'Move the small round eye to the piston wrist bore, turn the rod toward the skirt if needed, then release.'],
   pin: ['A fitted joint still needs a fastener.', 'Align the separate wrist pin with both bores.', 'Move the pin above the current piston wrist center.', 'Align and release the pin, then drag it down its axis until fully inserted.'],
   piston: ['The joined parts can now move together.', 'The piston belongs in the representative cylinder.', 'Carry the pinned unit to the cylinder connection.', 'Carry the unit to the cylinder, roll to zero and swing the rod into line, then release.'],
   rodCap: ['Close the remaining open bearing.', 'The cap closes the rod around the crankpin.', 'Move the cap to the installed rod’s crank connection.', 'Move the cap to the crank connection, align its roll, then release.'],

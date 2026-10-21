@@ -29,7 +29,7 @@ test('separate start, wrong order and ordinary drops never fabricate a joint', (
 test('rod target follows freely repositioned and rotated piston; wrong roll fails', () => {
   let s = place(initialState(), 'piston', { x: 3.1, z: 3.8 }, 45);
   assert.deepEqual(targetFor(s, 'rod'), { x: 3.1, z: 3.8 });
-  s = place(s, 'rod', targetFor(s, 'rod'), 0);
+  s = place(s, 'rod', targetFor(s, 'rod'), 135);
   assert.equal(s.parts.rod.status, 'loose'); assert.equal(fit(s, 'rod').reason, 'orientation');
   s = fitted(s); assert.equal(s.parts.rod.status, 'fitted');
   s = place(s, 'pin'); assert.equal(s.parts.pin.status, 'aligned');
@@ -144,4 +144,63 @@ test('pin axial height follows its state and installed cap cannot rotate until l
   const roll = s.parts.rodCap.roll;
   s = t(s, { type: 'rotate', delta: 30 });
   assert.equal(s.parts.rodCap.roll, roll + 30);
+});
+
+
+test('initial rod angle fits without rotation and pinning preserves the chosen swing', () => {
+  const start = initialState();
+  let s = act(start, { type: 'begin', part: 'rod' }, { type: 'move', ...targetFor(start, 'rod') });
+  assert.equal(fit(s, 'rod').ready, true);
+  const beforeDrop = s;
+  s = t(s, { type: 'drop' });
+  assert.equal(s.parts.rod.status, 'fitted'); assert.equal(s.parts.rod.roll, 30);
+  assert.equal(s.pivot, 30); assert.equal(poseFor(s, 'rod').roll, 30);
+  assert.equal(s.feedback, 'Rod fitted in piston. Slide the separate wrist pin through to hold it.');
+  assert.deepEqual(t(s, { type: 'undo' }), start);
+  assert.deepEqual(t(beforeDrop, { type: 'cancel' }), start);
+  const fittedState = s;
+  s = pinned(s);
+  assert.equal(s.pivot, 30); assert.equal(s.parts.rod.roll, 30); assert.equal(poseFor(s, 'rod').roll, 30);
+  assert.equal(s.parts.rod.x, s.parts.piston.x); assert.equal(s.parts.rod.z, s.parts.piston.z);
+  s = t(s, { type: 'unpin' });
+  assert.equal(s.parts.rod.status, 'fitted'); assert.equal(s.pivot, 30); assert.equal(s.parts.rod.roll, 30);
+  const moved = act(s, { type: 'begin', part: 'piston' }, { type: 'move', x: 2, z: 2 });
+  assert.equal(moved.parts.rod.status, 'loose'); assert.equal(moved.parts.rod.roll, 30); assert.equal(moved.pivot, 0);
+  assert.equal(fittedState.parts.rod.roll, 30, 'transitions do not mutate prior snapshots');
+});
+
+test('rod supports either 65 degree swing boundary and explains excessive angle', () => {
+  for (const roll of [-65, 65]) {
+    const s = place(initialState(), 'rod', undefined, roll);
+    assert.equal(s.parts.rod.status, 'fitted'); assert.equal(s.pivot, roll);
+  }
+  let s = place(initialState(), 'rod', undefined, 90);
+  assert.equal(s.parts.rod.status, 'loose'); assert.equal(fit(s, 'rod').reason, 'orientation');
+  assert.equal(fit(s, 'rod').degreesNeeded, 25);
+  assert.match(fit(s, 'rod').message, /piston skirt.*25°/);
+  assert.match(fit(initialState(), 'rod').message, /small round eye.*open big end/);
+  s = place(initialState(), 'piston', { x: 2, z: 3 }, 45);
+  s = place(s, 'rod', undefined, 90);
+  assert.equal(s.parts.rod.status, 'fitted'); assert.equal(s.pivot, 45);
+  assert.equal(poseFor(s, 'rod').roll, 90);
+  s = pinned(s);
+  assert.equal(s.pivot, 45); assert.equal(s.parts.rod.roll, 90);
+  s = t(s, { type: 'pivot', delta: -15 });
+  assert.equal(s.pivot, 30); assert.equal(s.parts.rod.roll, 75);
+  s = t(s, { type: 'unpin' });
+  assert.equal(s.pivot, 30); assert.equal(s.parts.rod.roll, 75); assert.equal(poseFor(s, 'rod').roll, 75);
+});
+
+
+test('rod nearby guidance includes a mistaken big-end placement without widening the fit', () => {
+  let s = initialState();
+  const target = targetFor(s, 'rod');
+  s = place(s, 'rod', { x: target.x, z: target.z + MECHANICS.rodLength });
+  const result = fit(s, 'rod');
+  assert.equal(result.near, true); assert.equal(result.ready, false); assert.equal(result.reason, 'position');
+  assert.match(result.message, /small round eye.*open big end/);
+  s = place(s, 'rod', { x: target.x, z: target.z + .31 });
+  assert.equal(fit(s, 'rod').ready, false);
+  s = place(s, 'rod', { x: target.x, z: target.z + .3 });
+  assert.equal(s.parts.rod.status, 'fitted');
 });

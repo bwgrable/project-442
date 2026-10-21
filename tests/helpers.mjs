@@ -1,11 +1,11 @@
 import { expect } from '@playwright/test';
 export const ready=async page=>{await page.goto('/');await page.locator('[data-ready=true]').waitFor({timeout:45000});};
 export const snapshot=page=>page.evaluate(()=>window.__PROJECT442__.snapshot());
-export async function pointFor(page,part){await page.locator('#viewport').scrollIntoViewIfNeeded();const p=await page.evaluate(id=>window.__PROJECT442__.pickPoint(id),part);expect(p,`${part} has visible pickable geometry`).not.toBeNull();return p;}
+export async function pointFor(page,part,nearJoint=false){await page.locator('#viewport').scrollIntoViewIfNeeded();const p=await page.evaluate(([id,near])=>window.__PROJECT442__.pickPoint(id,near),[part,nearJoint]);expect(p,`${part} has visible pickable geometry`).not.toBeNull();return p;}
 export async function selectMesh(page,part,touch=false){const p=await pointFor(page,part);if(touch)await page.touchscreen.tap(p.x,p.y);else await page.mouse.click(p.x,p.y);expect((await snapshot(page)).state.selected).toBe(part);}
 export async function orient(page,part,targetRoll=0,touch=false){await selectMesh(page,part,touch);const roll=(await snapshot(page)).state.parts[part].roll,delta=targetRoll-roll;for(let i=0;i<Math.abs(delta)/15;i++){const button=page.locator(delta>0?'#rotate-right':'#rotate-left');if(touch)await button.tap();else await button.click();}}
-export async function startDrag(page,part,touch=false){
- const p=await pointFor(page,part),initial=await snapshot(page);let cdp;
+export async function startDrag(page,part,touch=false,nearJoint=false){
+ const p=await pointFor(page,part,nearJoint),initial=await snapshot(page);let cdp;
  if(touch){cdp=await page.context().newCDPSession(page);await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:p.x,y:p.y,id:0}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:p.x+8,y:p.y+2,id:0}]});}
  else {await page.mouse.move(p.x,p.y);await page.mouse.down();await page.mouse.move(p.x+8,p.y+2,{steps:2});}
  expect((await snapshot(page)).state.drag).not.toBeNull();expect((await snapshot(page)).camera).toEqual(initial.camera);

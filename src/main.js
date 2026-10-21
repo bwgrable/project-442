@@ -10,7 +10,7 @@ import { PARTS, ORDER, ENGINE_OFFSET, BENCH_Y, PIN_TRAVEL, initialState, transit
 const $=id=>document.getElementById(id), viewport=$('viewport');
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
 let state=initialState(),renderer,scene,camera,controls,engine,ring,failed=false,dirty=true,orbitMode=false,view='bench';
-let gesture=null,blockedGesture=false;
+let gesture=null,blockedGesture=false,dropNotice=null,eyeRing;
 const pointers=new Set(),roots={},materials={};
 const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2(),yAxis=new THREE.Vector3(0,1,0);
 const benchRotation=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),-Math.PI/2);
@@ -22,7 +22,7 @@ const worldEngine=point=>new THREE.Vector3(...point).add(new THREE.Vector3(ENGIN
 function benchQuaternion(roll){return benchRotation.clone().multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),THREE.MathUtils.degToRad(roll)));}
 $('part-list').innerHTML=ORDER.map((id,i)=>`<button class="part-card" data-part="${id}" aria-pressed="false"><span class="symbol" aria-hidden="true">${['◉','⌕','┃','∪'][i]}</span><span><strong>${PARTS[id].name}</strong><small id="status-${id}">Loose on bench</small></span></button>`).join('');
 $('part-labels').innerHTML=ORDER.map(id=>`<span class="part-label" id="label-${id}">${shortNames[id]}</span>`).join('');
-function dispatch(action){if(failed)return;state=transition(state,action);updateUI();if(engine)applyState();dirty=true;}
+function dispatch(action){if(failed)return;const dropped=action.type==='drop'&&state.drag;state=transition(state,action);dropNotice=dropped?{message:state.feedback,ready:state.tone==='success'}:null;updateUI();if(engine)applyState();dirty=true;}
 function updateMotionUI(){
  $('angle').value=String(Math.round(state.angle*180/Math.PI));$('angle-value').value=`${Math.round(state.angle*180/Math.PI)}°`;
  $('turn-progress').textContent=state.tested?'One full revolution. It works.':`${Math.min(360,Math.round(Math.abs(state.travel)*180/Math.PI))}° / 360° · turn in one direction`;
@@ -55,9 +55,10 @@ function updateUI(){
  $('section').setAttribute('aria-pressed',String(state.section));
  $('camera-mode').setAttribute('aria-pressed',String(orbitMode));$('camera-mode').textContent=orbitMode?'Move parts':'Orbit view';
  const nearby=state.drag?fit(state,state.drag.part):null;
- $('fit-feedback').hidden=!nearby?.near&&state.drag?.mode!=='insert';
+ $('fit-feedback').hidden=!nearby?.near&&state.drag?.mode!=='insert'&&!dropNotice;
  if(state.drag?.mode==='insert'){$('fit-feedback').textContent=state.parts.pin.depth>=.92?'Pin through. Release to join.':'Slide the pin along its axis.';$('fit-feedback').dataset.ready=String(state.parts.pin.depth>=.92);}
  else if(nearby?.near){$('fit-feedback').textContent=nearby.message;$('fit-feedback').dataset.ready=String(nearby.ready);}
+ else if(dropNotice){$('fit-feedback').textContent=dropNotice.message;$('fit-feedback').dataset.ready=String(dropNotice.ready);}
  updateMotionUI();
 }
 function prepareRoots(){
@@ -79,7 +80,7 @@ function applyState(){
   roots.piston.position.copy(benchWrist('piston'));roots.piston.quaternion.copy(benchQuaternion(piston.roll));
   const attached=rod.status==='fitted'||rod.status==='pinned';
   const wrist=attached?benchWrist('piston'):benchWrist('rod');
-  const q=benchQuaternion(attached?piston.roll+(pinned()?state.pivot:0):rod.roll);
+  const q=benchQuaternion(attached?piston.roll+state.pivot:rod.roll);
   roots.rod.quaternion.copy(q);roots.rod.position.copy(wrist).sub(new THREE.Vector3(0,MECHANICS.rodLength,0).applyQuaternion(q));
   roots.pin.quaternion.copy(benchRotation);
   roots.pin.position.copy(pin.status==='loose'?benchWrist('pin'):benchWrist('piston'));
@@ -90,6 +91,8 @@ function applyState(){
  for(const id of ORDER){const selected=state.selected===id||(pinned()&&state.selected&&state.selected!=='rodCap'&&id!=='rodCap');for(const material of materials[id]){material.emissive.setHex(selected?0x1b7083:0);material.emissiveIntensity=selected?.16:0;}roots[id].traverse(child=>{if(child.isMesh)child.castShadow=!state.playing&&!state.drag;});}
  const nearby=state.drag?fit(state,state.drag.part):null,hint=getHint(state),indicated=nearby?.near?state.drag.part:hint.level>=3?hint.part:null;
  ring.visible=!!indicated&&state.drag?.mode!=='insert';
+ eyeRing.visible=state.drag?.part==='rod'&&!!nearby?.near;
+ if(eyeRing.visible){eyeRing.position.set(rod.x,BENCH_Y+.04,rod.z);eyeRing.material.color.setHex(nearby.ready?0x95edbc:0xe6c28d);}
  if(indicated){const t=targetFor(state,indicated);ring.position.set(t.x,indicated==='piston'||indicated==='rodCap'?worldEngine(linkage(0)[indicated==='piston'?'wristpin':'crankpin']).y:BENCH_Y+.04,t.z);ring.material.color.setHex(nearby?.ready?0x95edbc:0xe6c28d);}
  scene.updateMatrixWorld(true);
 }
@@ -190,6 +193,7 @@ function addBench(){
  const board=new THREE.Mesh(new RoundedBoxGeometry(10,.16,11,2,.05),new THREE.MeshStandardMaterial({color:0x24353e,roughness:.76,metalness:.15}));board.position.set(0,-.85,.4);board.receiveShadow=true;scene.add(board);
  const mat=new THREE.Mesh(new RoundedBoxGeometry(4.4,.04,4.6,2,.07),new THREE.MeshStandardMaterial({color:0x38565c,roughness:.9}));mat.position.set(1.2,-.74,2.05);mat.receiveShadow=true;scene.add(mat);
  ring=new THREE.Mesh(new THREE.TorusGeometry(.25,.012,6,48),new THREE.MeshBasicMaterial({color:0xe6c28d,depthTest:false,transparent:true,opacity:.9}));ring.rotation.x=Math.PI/2;ring.renderOrder=10;ring.visible=false;scene.add(ring);
+ eyeRing=new THREE.Mesh(new THREE.TorusGeometry(.14,.014,6,32),new THREE.MeshBasicMaterial({color:0xe6c28d,depthTest:false}));eyeRing.rotation.x=Math.PI/2;eyeRing.renderOrder=11;eyeRing.visible=false;scene.add(eyeRing);
 }
 function initialize(){try{
  renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.35));renderer.shadowMap.enabled=true;renderer.shadowMap.autoUpdate=false;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
@@ -210,12 +214,13 @@ function initialize(){try{
 wireControls();updateUI();initialize();
 
 // Read-only diagnostics project actual geometry so browser tests can drive normal input.
-function pickPoint(id){
+function pickPoint(id,nearJoint=false){
  const root=roots[id],r=renderer.domElement.getBoundingClientRect(),candidates=[];
  root.traverse(child=>{if(!child.isMesh||!visible(child))return;const pos=child.geometry.getAttribute('position');const stride=Math.max(3,Math.floor(pos.count/40/3)*3);for(let i=0;i+2<pos.count;i+=stride){const p=new THREE.Vector3().fromBufferAttribute(pos,i).add(new THREE.Vector3().fromBufferAttribute(pos,i+1)).add(new THREE.Vector3().fromBufferAttribute(pos,i+2)).multiplyScalar(1/3);child.localToWorld(p);candidates.push(project(p));}});
+ if(nearJoint&&id==='rod'){const eye=project(root.localToWorld(new THREE.Vector3(0,MECHANICS.rodLength,0)));candidates.sort((a,b)=>Math.hypot(a.x-eye.x,a.y-eye.y)-Math.hypot(b.x-eye.x,b.y-eye.y));}
  for(const p of candidates){if(p.x<r.left+10||p.x>r.right-10||p.y<r.top+80||p.y>r.bottom-65)continue;if(pick(p.x,p.y)?.part===id)return p;}return null;
 }
 Object.defineProperty(window,'__PROJECT442__',{value:Object.freeze({snapshot(){
  const positions=engine?{piston:roots.piston.getWorldPosition(new THREE.Vector3()).toArray(),rodBig:roots.rod.getWorldPosition(new THREE.Vector3()).toArray(),rodSmall:roots.rod.localToWorld(new THREE.Vector3(0,MECHANICS.rodLength,0)).toArray(),pin:roots.pin.getWorldPosition(new THREE.Vector3()).toArray(),rodCap:roots.rodCap.getWorldPosition(new THREE.Vector3()).toArray()}:null;
  return {state:structuredClone(state),failed,positions,camera:camera?.position.toArray(),metrics:{...metrics},gesture:gesture?{part:gesture.part,moved:gesture.moved}:null};
-},pickPoint(id){return engine?pickPoint(id):null;},dropPoint(id){if(!gesture?.plane)return null;const t=targetFor(state,id);return project(new THREE.Vector3(t.x+gesture.offset.x,BENCH_Y,t.z+gesture.offset.y));},movePoint(x,z){if(!gesture?.plane)return null;return project(new THREE.Vector3(x+gesture.offset.x,BENCH_Y,z+gesture.offset.y));},insertionPoint(depth=1){if(!gesture?.axis)return null;return{x:gesture.startX+gesture.axis.x*(depth-gesture.depth),y:gesture.startY+gesture.axis.y*(depth-gesture.depth)};},screenCenter(id){return roots[id]?project(roots[id].getWorldPosition(new THREE.Vector3())):null;},partPosition(id){return roots[id]?.getWorldPosition(new THREE.Vector3()).toArray();}})});
+},pickPoint(id,nearJoint=false){return engine?pickPoint(id,nearJoint):null;},jointScreen(id){return engine?project(id==='rod'?roots.rod.localToWorld(new THREE.Vector3(0,MECHANICS.rodLength,0)):roots.piston.getWorldPosition(new THREE.Vector3())):null;},dropPoint(id){if(!gesture?.plane)return null;const t=targetFor(state,id);return project(new THREE.Vector3(t.x+gesture.offset.x,BENCH_Y,t.z+gesture.offset.y));},movePoint(x,z){if(!gesture?.plane)return null;return project(new THREE.Vector3(x+gesture.offset.x,BENCH_Y,z+gesture.offset.y));},insertionPoint(depth=1){if(!gesture?.axis)return null;return{x:gesture.startX+gesture.axis.x*(depth-gesture.depth),y:gesture.startY+gesture.axis.y*(depth-gesture.depth)};},screenCenter(id){return roots[id]?project(roots[id].getWorldPosition(new THREE.Vector3())):null;},partPosition(id){return roots[id]?.getWorldPosition(new THREE.Vector3()).toArray();}})});

@@ -1,6 +1,8 @@
 # Prototype 005 verification
 
-This report belongs to the source commit containing it on `dev/prototype-005-subassembly`, based on `53eaf2eccbb4a3e7f29e4a9274c3cb8c89983f07`. Scope and budgets were recorded before implementation in [SUBASSEMBLY_PLAN.md](SUBASSEMBLY_PLAN.md).
+This report records the original Prototype 005 delivery at `b714f9f1142e4ec56412f97400f3969e17b418a8` on `dev/prototype-005-subassembly`, based on `53eaf2eccbb4a3e7f29e4a9274c3cb8c89983f07`. Scope and budgets were recorded before implementation in [SUBASSEMBLY_PLAN.md](SUBASSEMBLY_PLAN.md).
+
+The subsequent playtest correction and its current evidence are recorded in [ROD_FIT_FIX.md](ROD_FIT_FIX.md). The measurements and screenshots below remain historical evidence for the original delivery.
 
 ## Implementation
 

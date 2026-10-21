@@ -5,7 +5,7 @@ Build a small mechanism on the bench, then connect it to the prepared engine. Th
 ## Interaction
 
 - Drag actual pieces across the bench. A tap selects only. Roll the piston or rod in 15° steps using the adjacent buttons or Q/E.
-- Fit the rod's small end between the piston bosses. This temporary fit is not a carrying joint: moving either piece separates them.
+- Fit the rod's small round eye into the piston wrist bore. Its starting 30° swing is valid; fitting keeps that angle. Nearby rings identify the two openings, and the drop result stays visible. This temporary fit is not a carrying joint: moving either piece separates them.
 - Drag the separate pin above the aligned bores and release. Then drag the pin down along its axis to insert it continuously. Partial insertion stays unfinished; release fully inserted to join. The nearby controls also provide small insertion/withdrawal steps.
 - Carry the pinned unit by dragging its piston, rod or pin. Use **Swing the rod** to inspect the pivot. **Pull pin out** separates the joint coherently; **Undo** reverses changes.
 - Choose **Engine + bench**, return the rod pivot and unit roll into line, then drag the completed unit into the representative cylinder. Fit the loose rod cap to close the crank connection. Turn the crank through a revolution and watch the joint transfer motion. **See joint closer** frames the working connection beside the crank controls.
@@ -19,7 +19,7 @@ The block, crankshaft, main caps, bearings and rings are prepared. The focused e
 
 The new separate pin fits actual hollow wrist bores and an open rod small end. Dimensions are internally consistent illustrative scene units, not verified Rocket 400 service specifications. The existing slider-crank solver drives installed motion. Other cylinders remain outside scope.
 
-See [the plan and budgets](SUBASSEMBLY_PLAN.md), [verification](SUBASSEMBLY_VERIFICATION.md), and [mechanical assumptions](MECHANICAL_REFERENCES.md). Prior prototype reports and `review/small-pile` are historical evidence for their own revisions.
+See [the plan and budgets](SUBASSEMBLY_PLAN.md), [original verification](SUBASSEMBLY_VERIFICATION.md), [rod-fit correction](ROD_FIT_FIX.md), and [mechanical assumptions](MECHANICAL_REFERENCES.md). Prior prototype reports and `review/small-pile` are historical evidence for their own revisions.
 
 ## Development
 
