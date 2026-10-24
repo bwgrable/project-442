@@ -1,35 +1,34 @@
-# Project 442 — Make a connection / Prototype 005
+# Project 442 — Parts explorer / Pilot 006
 
-Build a small mechanism on the bench, then connect it to the prepared engine. The piston, connecting rod and wrist pin begin as separate visible pieces. Move the piston anywhere on the bench, fit the rod to its current bore, and slide the separate pin through. Once pinned, the unit carries together and the rod can swing about the wrist joint.
+Choose a part and see it installed automatically in a detailed, illustrative one-cylinder cutaway. This pilot focuses on recognizing components and understanding their connections.
 
-## Interaction
+## Explore
 
-- Drag actual pieces across the bench. A tap selects only. Roll the piston or rod in 15° steps using the adjacent buttons or Q/E.
-- Fit the rod's small round eye into the piston wrist bore. Its starting 30° swing is valid; fitting keeps that angle. Nearby rings identify the two openings, and the drop result stays visible. This temporary fit is not a carrying joint: moving either piece separates them.
-- Drag the separate pin above the aligned bores and release. Then drag the pin down along its axis to insert it continuously. Partial insertion stays unfinished; release fully inserted to join. The nearby controls also provide small insertion/withdrawal steps.
-- Carry the pinned unit by dragging its piston, rod or pin. Use **Swing the rod** to inspect the pivot. **Pull pin out** separates the joint coherently; **Undo** reverses changes.
-- Choose **Engine + bench**, return the rod pivot and unit roll into line, then drag the completed unit into the representative cylinder. Fit the loose rod cap to close the crank connection. Turn the crank through a revolution and watch the joint transfer motion. **See joint closer** frames the working connection beside the crank controls.
-- **Bench view**, **Look closer**, empty-space orbit and pinch zoom support inspection. A second finger cancels an active part drag; lift both fingers before starting a fresh camera gesture. Scroll outside the 3D view.
-- **Cancel** / Escape, capture loss, resizing and backgrounding restore the pending transaction and pause motion. **Separate / return**, **Lift unit out**, **Undo** and **Start over** keep dependencies consistent.
-- **Move without dragging** offers named selection, pickup, directional controls and release using identical fit rules. With the canvas focused: Space picks up; arrows move (Up/Down slides an aligned pin); Q/E rolls; Enter releases; Escape cancels. Optional hints progress only on request. Reduced motion retains crank slider/steps.
+- Select **Crankshaft** or **Piston** first; either order works. The **Connecting rod** needs both connection points. The **Wrist pin** completes the piston-to-rod pivot.
+- A blocked selection leaves the assembly intact and names the missing connections. **Explain this connection** adds optional context. These are learning dependencies, not a factory assembly procedure.
+- Select an added part to highlight it and read its role. **Look closer** isolates it with feature labels; **Back to assembly** restores the complete view. **About the block**, **Side view**, **Reset view** and **Cutaway** support inspection.
+- Once all four parts are present, **Turn slowly**, **Step 15°** or the crank slider shows how the circular crank motion relates to the piston’s travel. Selecting a part pauses motion. Reduced motion keeps manual controls; backgrounding pauses animation.
+- **Reset assembly** clears the parts and motion for another order. Native buttons and range controls support touch and keyboard without precision placement.
 
-## Scope and simplification
+The block is prepared. Rings, bearings and matching caps accompany their parent components. Geometry is internally consistent but illustrative—not verified Rocket 400 dimensions, a complete engine or repair instructions. See [mechanical assumptions](MECHANICAL_REFERENCES.md).
 
-The block, crankshaft, main caps, bearings and rings are prepared. The focused experiment is one piston/rod/pin unit plus its final rod-cap connection. Bench parts lie in a horizontal inspection plane with pin axes prepared; roll is adjustable. Insertion is constrained to the pin axis. Final cylinder orientation and vertical seating are preset. There is no rigid-body collision, force, fastening or service-procedure simulation.
+## Development and evidence
 
-The new separate pin fits actual hollow wrist bores and an open rod small end. Dimensions are internally consistent illustrative scene units, not verified Rocket 400 service specifications. The existing slider-crank solver drives installed motion. Other cylinders remain outside scope.
+Existing stack: Three.js, Vite, Playwright and Node. No new packages or services.
 
-See [the plan and budgets](SUBASSEMBLY_PLAN.md), [original verification](SUBASSEMBLY_VERIFICATION.md), [rod-fit correction](ROD_FIT_FIX.md), and [mechanical assumptions](MECHANICAL_REFERENCES.md). Prior prototype reports and `review/small-pile` are historical evidence for their own revisions.
+- `npm test` — state, geometry and linkage checks, including preserved historical tests.
+- `npm run build` — pilot and preserved Prototype005 entry.
+- `npm run test:browser` — current pilot mouse/touch, invalid order, hints, reset, motion, recovery and archive smoke checks.
+- `npm run preview -- --port 4180` then `node tests/pilot-measure.mjs` — production-build screenshots and cloud measurements. `PROOF_URL` / `EVIDENCE_DIR` can override the defaults.
 
-## Development
+[Plan and budgets](PILOT_PARTS_PLAN.md) · [Verification record](PILOT_PARTS_VERIFICATION.md) · [Screenshots](review/parts-explorer/README.md)
 
-Existing stack: Three.js 0.186.1, Vite 8.3.4, Playwright 1.64.1, Node 24. No new dependencies or services.
+`src/pilot-state.js` owns assembly and motion state. `src/pilot-model.js` owns the focused procedural section; `src/pilot-main.js` and `src/pilot.css` present the selection and learning interface. The existing analytic linkage solver remains unchanged. Browser diagnostics expose read-only state/geometry for evidence.
 
-- `npm test` — state, geometry and analytic linkage checks (including retained historical small-pile state checks).
-- `npm run build` — production bundle.
-- `npm run test:browser` — direct mouse/touch, keyboard, recovery and motion journeys against the build.
-- `npm run preview -- --port 4174`, then `node tests/measure.mjs` — production-build screenshots and cloud samples. `PROOF_URL`, `EVIDENCE_DIR`, `CHROMIUM_PATH` override defaults.
+Development branch: `dev/pilot-006-parts-explorer`. Only its separate Preview is authorized. No merge or production promotion.
 
-`src/subassembly.js` owns active assembly state, fits, pin insertion, pivot, dependencies, history and motion eligibility. `src/main.js` integrates rendering/input. `src/engine.js` owns illustrative geometry; `src/mechanics.js` retains the constrained solver. The old `src/pile.js` is historical and not imported by the current app. Browser diagnostics are read-only and project rendered geometry for real-input tests.
+## Earlier versions
 
-Development branch: `dev/prototype-005-subassembly`. Cloud Chromium/SwiftShader and touch emulation do not establish physical iPhone performance or uncoached usability. Main, earlier previews and deployment protection remain unchanged.
+Prototype005 source remains in `src/main.js`, `src/subassembly.js`, `src/engine.js` and `src/style.css`. Its original entry is preserved as `prototype-005.html`, included in the build, with [its original usage guide](PROTOTYPE005_README.md). Earlier branches, reports and evidence directories remain unchanged. Old browser scenarios remain in `tests/browser.spec.js`; the default browser configuration now runs Pilot006.
+
+Cloud Chromium/SwiftShader and touch emulation establish automated reachability, not physical iPhone/Safari usability or performance.

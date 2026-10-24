@@ -26,3 +26,15 @@ Let `u = (sin β, cos β)` be the unit cylinder axis, `C = (r sin θ, r cos θ)`
 The positive root is used with `L > r`. At `θ = β`, the distance is `L+r`; at `θ = β+π`, it is `L−r`. Stroke is therefore `2r` in this selected in-line mechanism. These mathematical properties are verified separately from rendering and frame rate. The model does not assert engine-specific offsets or verified dynamic behavior.
 
 A future claim of factory accuracy requires authoritative references with edition/page, measured dimensions, orientation and remaining uncertainty. That research and any corresponding fidelity expansion remain outside this delivery.
+
+## Pilot 006 learning exhibit
+
+Pilot006 retains the shared linkage dimensions and one active cylinder, presented as a focused section rather than a complete V8 casting. Its new model lives in `src/pilot-model.js`; earlier geometry remains unchanged.
+
+- The block, bearing supports and main caps are prepared. Rings accompany the piston; the matched cap accompanies the rod. Selecting parts places them at the solver's defined connections.
+- Crankshaft and piston may be selected in either order. Rod selection requires both; the pin requires the piston/rod joint. These are pedagogical dependencies, not a verified installation sequence.
+- The illustrative pin is a separate hollow tube: outer radius .075, inner radius .049, length .63 scene units. Piston bore radius .079 and rod bore radius .078 remain internally consistent. No conversion to service dimensions is asserted.
+- Section mode removes the near cylinder wall and near main support/bearing to expose the full crankpin path. Full view restores them. Copper faces mark authored cuts, not an original factory finish.
+- Geometry tests verify finite/bounded meshes, clear wrist bores, a genuinely hollow pin, invariant pin centers/rod length over a revolution and an unobstructed crankpin sightline from the exhibit's assembly camera.
+
+The exhibit demonstrates kinematic relationships only. It does not simulate combustion, loads, lubrication, collision, assembly forces, tolerances or service procedure.

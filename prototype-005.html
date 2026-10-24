@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101920"><meta name="description" content="Project 442: fit a piston, connecting rod and wrist pin, then make the engine move.">
+<title>Project 442 — Make a connection</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23101920'/%3E%3Ctext x='5' y='42' fill='%2387d5dc' font-size='27'%3E442%3C/text%3E%3C/svg%3E">
+<script>
+window.addEventListener('error', event => {
+ if(event.target?.tagName!=='SCRIPT'||event.target.type!=='module')return;
+ const recover=()=>{document.getElementById('loading').hidden=true;document.getElementById('fallback').hidden=false;document.getElementById('fallback-detail').textContent='The workshop files could not load. Check your connection and reload.';document.querySelectorAll('button,input').forEach(el=>{if(el.id!=='retry')el.disabled=true;});};
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',recover,{once:true});else recover();
+},true);
+</script>
+</head>
+<body>
+<header class="masthead"><a href="./" class="brand" aria-label="Project 442 home">442<span>/</span></a><span class="wordmark">PROJECT 442<br><b>THE WORKSHOP</b></span><span class="edition">EXPERIMENT 005 <i>·</i> SUBASSEMBLY</span></header>
+<main>
+<div class="intro"><div><span class="eyebrow">THREE PIECES. ONE MOVING JOINT.</span><h1>Make a connection.<br class="mobile-break"> <em>Then make it move.</em></h1></div><p>Fit the pieces together on your bench.</p></div>
+<section class="workshop" aria-label="Piston subassembly workshop">
+<div class="scene-column">
+<div id="viewport" class="viewport">
+<div class="scene-top"><span>ROCKET 400–INSPIRED<br><b id="scene-status">Separate pieces</b></span><span class="scene-note">Illustrative geometry<br>Prepared engine · one cylinder</span></div>
+<div id="canvas-wrap"></div><div id="part-labels" aria-hidden="true"></div>
+<div class="loading" id="loading" role="status"><span class="spinner"></span>Opening the bench…</div>
+<div class="fallback" id="fallback" role="alert" hidden><h2>The 3D view couldn’t start.</h2><p id="fallback-detail">This workshop needs WebGL 2. Try an updated browser with graphics acceleration enabled.</p><button id="retry" onclick="location.reload()">Reload workshop</button></div>
+<div id="fit-feedback" class="fit-feedback" role="status" hidden></div>
+<div class="scene-tools"><button id="camera-mode" aria-pressed="false">Orbit view</button><button id="home-view">Bench view</button><button id="engine-view">Engine + bench</button><button id="section" aria-pressed="true">Cutaway</button></div>
+</div>
+<div id="motion-controls" class="motion-controls" hidden><span class="eyebrow">YOUR ASSEMBLY MOVES</span><p>Turn one full revolution. Watch the rod and piston stay connected.</p><label for="angle">Crank angle <output id="angle-value">0°</output></label><input id="angle" type="range" min="0" max="360" value="0" aria-label="Hand-turn crank angle"><div class="motion-buttons"><button id="play">Turn crank</button><button id="step">Step 15°</button></div><p id="turn-progress" role="status"></p><button id="motion-view">See joint closer</button></div>
+<div class="manipulation" id="manipulation">
+<div class="joint-controls" id="joint-controls" hidden><label for="pivot">Swing the rod <output id="pivot-value">0°</output></label><input id="pivot" type="range" min="-65" max="65" step="5" value="0" aria-label="Pivot connecting rod about wrist pin"><p>The pin stays fixed while the rod swings.</p></div>
+<div class="insertion-controls" id="insertion-controls" hidden><strong>Slide the pin through</strong><p>Drag the pin down along its axis. Or use these small steps.</p><div><button id="pin-out">Withdraw a little</button><button id="pin-in">Insert a little</button><button id="pin-release">Release pin</button></div><output id="pin-depth"></output></div>
+<div class="selection-line"><strong id="selected-name">Grab a piece.</strong><span id="roll-value">Drag a part · drag empty space to orbit</span></div>
+<div class="manip-buttons"><button id="rotate-left" aria-label="Roll selected part left 15 degrees" disabled>↶ 15°</button><button id="rotate-right" aria-label="Roll selected part right 15 degrees" disabled>15° ↷</button><button id="remove" disabled>Lift out</button><button id="unpin" hidden>Pull pin out</button><button id="undo" disabled>Undo</button><button id="cancel" hidden>Cancel</button></div>
+<p id="feedback" role="status" aria-live="polite">Move a piece and look at how its openings could meet.</p>
+</div>
+</div>
+<aside class="inspector" aria-label="Assembly support controls">
+<div class="panel-title"><span class="eyebrow">ON THE BENCH</span><button class="quiet" id="reset">Start over</button></div>
+<p class="aside-intro">A joint you can hold.<br> Fit the pieces, then try the movement.</p>
+<div id="part-list" class="part-list"></div>
+<div class="selection-actions"><button id="inspect" disabled>Look closer</button><button id="recover" disabled>Return to bench</button></div>
+<details id="alternative" class="alternative"><summary>Move without dragging</summary><p>Select a part, then Pick up. Move it across the bench, roll it and drop. For an aligned pin, Up/Down changes insertion depth. The same fit rules apply.</p><button id="pickup" disabled>Pick up selected part</button><div class="move-grid"><button data-move="0,-0.25" aria-label="Move toward back of bench">Back ↑</button><button data-move="-0.25,0" aria-label="Move left on bench">← Left</button><button data-move="0.25,0" aria-label="Move right on bench">Right →</button><button data-move="0,0.25" aria-label="Move toward front of bench">Front ↓</button></div><button id="drop">Drop here</button><p class="keyboard-note">Arrow keys move or slide pin · Q/E roll · Enter releases · Escape cancels. Focus the 3D view to use shortcuts.</p></details>
+<div class="hint-panel"><button id="hint">Want a hint?</button><span id="hint-level">OPTIONAL</span><div id="hint-content" hidden><strong id="hint-title"></strong><p id="hint-copy"></p></div></div>
+
+<div id="completion" class="completion" hidden><strong>You made it move.</strong><p>Take it apart, try another fit, or keep watching.</p></div>
+<details class="preparation"><summary>What this small experiment simplifies</summary><p>The block, crankshaft, main caps, bearings and piston rings are prepared. Your piston, rod and wrist pin begin separate. Parts lie on a horizontal inspection plane, with axial orientation prepared; an aligned pin slides only along its axis. Roll is adjustable. Final cylinder orientation and seating height are preset. The rod cap represents the final crank connection. There is no collision, force or fastening simulation. Geometry is illustrative, not factory dimensions or a service procedure. Other cylinders are outside this experiment.</p></details>
+<p class="gesture-note">Touch: one finger moves a part or orbits empty space. A second finger cancels a part drag; lift both fingers, then pinch to zoom. Scroll using the page outside the 3D view.</p>
+</aside>
+</section>
+</main><footer>PROJECT 442 <span>SUBASSEMBLY / 005</span></footer>
+<noscript>Enable JavaScript to use the interactive workshop.</noscript>
+<script type="module" src="/src/main.js"></script>
+</body></html>

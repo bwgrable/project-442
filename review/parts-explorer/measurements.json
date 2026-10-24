@@ -1,0 +1,33 @@
+{
+  "environment": "Cloud Chromium/SwiftShader; DPR1; 10Mbps download,100mslatency; not actual phone",
+  "results": [
+    {
+      "viewport": "desktop",
+      "width": 1440,
+      "height": 1100,
+      "readyMs": 2083,
+      "elapsedMs": 6178.799999999814,
+      "renderedFrames": 36,
+      "renderedFPS": 5.826374053214392,
+      "rafP95Ms": 383.39999999999964,
+      "triangles": 15536,
+      "drawCalls": 22,
+      "noOverflow": true,
+      "errors": []
+    },
+    {
+      "viewport": "phone",
+      "width": 390,
+      "height": 844,
+      "readyMs": 1515.9000000003725,
+      "elapsedMs": 6103.100000000559,
+      "renderedFrames": 69,
+      "renderedFPS": 11.305729874980532,
+      "rafP95Ms": 166.60000000000036,
+      "triangles": 15536,
+      "drawCalls": 22,
+      "noOverflow": true,
+      "errors": []
+    }
+  ]
+}
