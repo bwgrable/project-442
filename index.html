@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#ecece6"><meta name="description" content="Choose engine parts, see them installed, and explore how their connections move.">
-<title>Project 442 — Parts explorer</title>
+<title>Project 442 — V8 bottom end</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23182e35'/%3E%3Ctext x='5' y='42' fill='%23d8ad70' font-size='27'%3E442%3C/text%3E%3C/svg%3E">
 <script>
 window.addEventListener('error', event => {
@@ -14,12 +14,12 @@ window.addEventListener('error', event => {
 </script>
 </head>
 <body>
-<header class="masthead"><a class="brand" href="./" aria-label="Project 442 home">442<span>/</span></a><span class="brand-caption">PROJECT 442<br><b>THE PARTS EXPLORER</b></span><span class="edition">PILOT 006</span></header>
+<header class="masthead"><a class="brand" href="./" aria-label="Project 442 home">442<span>/</span></a><span class="brand-caption">PROJECT 442<br><b>THE PARTS EXPLORER</b></span><span class="edition">STAGE 007</span></header>
 <main>
-<div class="intro"><div><p class="eyebrow">A SMALL ENGINE STUDY</p><h1>Know the parts.<br><em>See the engine work.</em></h1></div><p class="intro-copy">Choose a part. See where it belongs.<br> Discover what connects it to the next.</p></div>
-<section class="explorer" aria-label="Engine parts explorer">
+<div class="intro"><div><p class="eyebrow">THE NEXT ENGINE STUDY</p><h1>One crankshaft.<br><em>Eight moving connections.</em></h1></div><p class="intro-copy">Build both banks, one connection at a time.<br> Choose the parts. See the whole bottom end work.</p></div>
+<section class="explorer" aria-label="V8 bottom-end explorer">
 <div class="scene-column">
-<div class="view-heading"><span><i class="live-dot"></i> ONE WORKING CYLINDER</span><span id="view-title">Assembly view</span></div>
+<div class="view-heading"><span><i class="live-dot"></i> TWO BANKS · EIGHT CYLINDERS</span><span id="view-title">Assembly view</span></div>
 <div id="viewport" class="viewport">
 <div id="canvas-wrap"></div>
 <div class="view-caption"><span class="eyebrow" id="scene-kicker">THE FOUNDATION</span><strong id="scene-name">Engine block</strong><p id="scene-description">A section through the casting reveals the cylinder and crank supports.</p></div>
@@ -28,7 +28,7 @@ window.addEventListener('error', event => {
 <div id="feature-labels" aria-hidden="true"></div>
 <div class="scene-bottom"><span id="scene-note">Cut surfaces shown in copper</span><button id="back-view" hidden>← Back to assembly</button></div>
 </div>
-<div class="view-tools" aria-label="View controls"><button id="section" aria-pressed="true">Cutaway <span>On</span></button><button id="side-view" aria-pressed="false">Side view</button><button id="home-view">Reset view</button><button id="block-view">About the block</button></div>
+<div class="view-tools" aria-label="View controls"><button id="section" aria-pressed="true">Cutaway <span>On</span></button><button data-view="both" aria-pressed="true">Both banks</button><button data-view="A" aria-pressed="false">Bank A</button><button data-view="B" aria-pressed="false">Bank B</button><button data-view="under" aria-pressed="false">Underside</button><button id="home-view">Reset view</button><button id="block-view">About the block</button></div>
 <div id="feedback" class="feedback" role="status" aria-live="polite">Choose any part to begin. Each selection adds it automatically when its connections are ready.</div>
 <section class="motion-panel" aria-label="Crank motion">
 <div class="motion-title"><div><span class="eyebrow">FOLLOW THE CONNECTION</span><h2 id="motion-title">Bring the assembly to life.</h2></div><span id="motion-status">Waiting for the four parts</span></div>
@@ -38,23 +38,23 @@ window.addEventListener('error', event => {
 <p id="motion-explanation" class="motion-explanation">Complete the connections to explore their movement.</p>
 </section>
 </div>
-<aside class="parts-panel" aria-label="Choose and learn about parts">
-<div class="panel-heading"><div><span class="eyebrow">THE COMPONENTS</span><h2>Choose a part.</h2></div><span id="part-count">0 / 4 added</span></div>
-<p class="panel-copy">Pick your own order. Ready parts install with one tap. Select an added part to learn more.</p>
-<div id="part-list" class="part-list"></div>
+<aside class="parts-panel" aria-label="Choose and learn about bottom-end parts">
+<div class="panel-heading"><div><span class="eyebrow">BUILD YOUR UNDERSTANDING</span><h2>Explore the bottom end.</h2></div><span id="part-count">0 / 21 added</span></div>
+<p class="panel-copy">Choose your own order. A tap installs each ready part; missing connections are explained.</p>
+<div class="component-groups">
+<section class="component-group" aria-label="Crankshaft supports"><div class="group-heading"><h3>Crank &amp; supports</h3><span>THE SHARED FOUNDATION</span></div><div id="support-parts" class="part-list support-parts"></div></section>
+<section class="component-group" aria-label="Individual cylinder assemblies"><div class="group-heading"><h3>Eight cylinders</h3><span id="cylinder-count">0 / 8 connected</span></div><p class="group-copy">Choose a cylinder, then add its piston and rod.</p><div id="cylinder-selector" class="cylinder-selector"></div><div class="active-cylinder"><strong id="active-cylinder-name">Bank A · Cylinder 1</strong><small>A/B are teaching labels, not factory numbering.</small></div><div id="cylinder-parts" class="part-list"></div></section>
+<section class="component-group" aria-label="Lubrication components"><div class="group-heading"><h3>Pump &amp; pan</h3><span>THE UNDERSIDE</span></div><div id="oil-parts" class="part-list"></div></section>
+</div>
 <section class="part-detail" aria-label="Selected component">
 <div class="detail-heading"><span class="eyebrow" id="detail-kicker">START WITH CURIOSITY</span><span id="detail-status"></span></div>
-<h2 id="detail-name">Four parts. One relationship.</h2><p id="detail-role">The piston travels in the cylinder. A rod joins it to the crankshaft, and a wrist pin lets that joint pivot.</p>
-<ul id="detail-features"></ul>
-<button id="inspect" disabled>Look closer</button>
-<button id="hint" class="text-button" aria-expanded="false" aria-controls="hint-content">Explain the connections <span>＋</span></button>
-<div id="hint-content" class="hint-content" hidden></div>
+<h2 id="detail-name">A complete bottom end.</h2><p id="detail-role">One crankshaft connects the motion of eight pistons across two banks.</p><ul id="detail-features"></ul><button id="inspect" disabled>Look closer</button><button id="hint" class="text-button" aria-expanded="false" aria-controls="hint-content">Explain the connections <span>＋</span></button><div id="hint-content" class="hint-content" hidden></div>
 </section>
 <div class="reset-row"><span>Try another order.</span><button id="reset">Reset assembly</button></div>
-<details class="scope-note"><summary>About this engine study</summary><p>This is a focused one-cylinder section inspired by a V8 rotating assembly. The block is prepared. Rings, bearings and matching caps are included with their parent parts. Selectable connections teach how parts relate; they are not a factory assembly sequence.</p><p>Geometry and proportions are illustrative, not verified Rocket 400 dimensions or repair instructions. Other cylinders, combustion, valves and service procedures are outside this pilot.</p></details>
+<details class="scope-note"><summary>What this engine study simplifies</summary><p>This is an illustrative V8 bottom end inspired by Project442's Rocket400 theme. Geometry, bank offsets and crank phases teach relationships; they are not verified historical dimensions, cylinder numbering or a firing order.</p><p>The block is prepared. Rings accompany each piston; wrist pins, rod bearings and matched rod caps accompany each connecting rod. Main bearing lower shells accompany the main caps. The oil pump and pickup are a representative assembly; pump drive, oil flow and combustion are not simulated.</p><p>Connected pistons move with the supported crank. Unconnected pistons are held at rest for teaching. The pan closes the underside after all internal connections are complete. Cutaway opens walls for inspection. Heads, valves and service procedures are outside this study.</p></details>
 </aside>
 </section>
-</main><footer><span>PROJECT 442 <b>/</b> PARTS → CONNECTIONS → MOTION</span><span>ILLUSTRATIVE ENGINE STUDY · 006</span></footer>
+</main><footer><span>PROJECT 442 <b>/</b> V8 BOTTOM END · PARTS → MOTION</span><span>ILLUSTRATIVE ENGINE STUDY · 007</span></footer>
 <noscript>Enable JavaScript to explore the engine parts.</noscript>
-<script type="module" src="/src/pilot-main.js"></script>
+<script type="module" src="/src/v8-main.js"></script>
 </body></html>

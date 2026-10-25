@@ -38,3 +38,13 @@ Pilot006 retains the shared linkage dimensions and one active cylinder, presente
 - Geometry tests verify finite/bounded meshes, clear wrist bores, a genuinely hollow pin, invariant pin centers/rod length over a revolution and an unobstructed crankpin sightline from the exhibit's assembly camera.
 
 The exhibit demonstrates kinematic relationships only. It does not simulate combustion, loads, lubrication, collision, assembly forces, tolerances or service procedure.
+
+## Stage007 V8 bottom end
+
+The full bottom-end study uses the same illustrative crank radius .42 and rod length1.45, with two banks at±45°, four axial stations[-1.35,-.45,.45,1.35] and illustrative throw phases[90°,180°,-90°,0°]. Each station has two rod lanes at opposite .12 axial offsets. The .24 lane separation exceeds the .195 modeled big-end width, while both fit within the .56 crankpin span. These are authored scene units and phases, not verified Oldsmobile dimensions or a factory firing sequence. A1–A4/B1–B4 are teaching labels.
+
+The existing slider-crank equation is solved separately for each bank and phased throw. Visible shaft throws use the same phases; piston axes and bores use the same bank angles/stagger. Tests check all eight centers, rod lengths, bore axes, repeatability and lane separation. Connected units follow the shaft; unconnected pistons are deliberately held at their resting pose for teaching.
+
+Upper main bearings install into the prepared block, followed by crank and main caps with their lower shells. Each selectable rod joint set includes wrist pin, bearing and matched cap. Pump/pickup geometry represents lubrication hardware below the block; it does not claim model-specific mounting or simulate its drive/flow. The hollow pan closes after the pump and all eight rod joints are present. Section view removes the near pan walls, floor and attached drain plug; full view restores the enclosing geometry. These learning dependencies are not service instructions.
+
+No new factory specifications, authenticity claims, heads, valvetrain or combustion model are introduced.
