@@ -1,0 +1,520 @@
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: #f5f4ef;
+  color: #182929;
+  font:
+    15px/1.45 "Inter",
+    "Segoe UI",
+    Arial,
+    sans-serif;
+}
+button,
+select,
+input {
+  font: inherit;
+}
+button,
+select {
+  min-height: 44px;
+  cursor: pointer;
+  color: inherit;
+}
+button {
+  background: #fff;
+  border: 1px solid #c4cac3;
+  border-radius: 5px;
+  padding: 8px 14px;
+  font-weight: 600;
+}
+button:hover:enabled {
+  border-color: #526d61;
+  background: #e5eae1;
+}
+button:disabled {
+  opacity: 0.48;
+  cursor: default;
+}
+button:focus-visible,
+select:focus-visible,
+input:focus-visible,
+canvas:focus-visible {
+  outline: 3px solid #cf762c;
+  outline-offset: 2px;
+}
+[hidden] {
+  display: none !important;
+}
+header {
+  height: 65px;
+  background: #182929;
+  color: white;
+  display: flex;
+  align-items: center;
+  padding: 0 max(4vw, 20px);
+  gap: 22px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.brand b {
+  font: bold italic 34px/1 Georgia;
+  color: #edb964;
+  letter-spacing: -3px;
+}
+.brand span,
+.eyebrow,
+.listhead span,
+#saved,
+.scene-label {
+  font:
+    700 10px/1.4 ui-monospace,
+    monospace;
+  letter-spacing: 0.12em;
+}
+.divider {
+  width: 1px;
+  height: 20px;
+  background: #59716a;
+}
+.studio {
+  font-size: 13px;
+  color: #d3ded6;
+}
+#saved {
+  margin-left: auto;
+  color: #d8e3d5;
+  letter-spacing: 0.03em;
+}
+main {
+  max-width: 1620px;
+  margin: auto;
+  padding: 28px max(4vw, 20px) 0;
+}
+.intro,
+.progress div,
+.caption,
+.listhead,
+footer,
+footer div,
+dialog div,
+.viewbar,
+.scene-controls,
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.intro {
+  margin-bottom: 20px;
+}
+.eyebrow {
+  color: #646e62;
+}
+h1 {
+  font-size: clamp(34px, 4vw, 58px);
+  line-height: 1.1;
+  letter-spacing: -0.06em;
+  margin: 4px 0;
+}
+h1 i {
+  font-family: Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.05em;
+}
+.progress {
+  width: 190px;
+  font-size: 12px;
+}
+.progress strong {
+  font-family: monospace;
+}
+progress {
+  width: 100%;
+  height: 5px;
+  accent-color: #557666;
+}
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.72fr) minmax(310px, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.viewer,
+.bench {
+  min-width: 0;
+}
+.viewer {
+  position: sticky;
+  top: 12px;
+}
+#scene {
+  position: relative;
+  height: clamp(330px, 48vw, 600px);
+  border-radius: 12px 12px 0 0;
+  background: radial-gradient(ellipse at 50% 43%, #f1eadd, #c3c0ae);
+  overflow: hidden;
+}
+canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+}
+.scene-label,
+.scene-controls,
+#loading {
+  position: absolute;
+}
+.scene-label {
+  left: 17px;
+  top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: #faf9f1df;
+  padding: 7px 11px;
+  border-radius: 20px;
+  pointer-events: none;
+}
+.dot {
+  background: #a9552f;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.scene-controls {
+  bottom: 12px;
+  right: 12px;
+}
+.scene-controls button {
+  width: 44px;
+  font-size: 19px;
+  background: #f8f7efed;
+}
+#loading {
+  top: 40%;
+  left: 10%;
+  right: 10%;
+  padding: 20px;
+  text-align: center;
+  background: #fff;
+  border-radius: 8px;
+}
+.viewbar {
+  padding: 8px;
+  background: #253736;
+  color: #f6f4e9;
+  flex-wrap: wrap;
+  border-radius: 0 0 8px 8px;
+}
+.viewbar button,
+.viewbar select {
+  color: inherit;
+  background: #324643;
+  border: 1px solid #587069;
+  border-radius: 4px;
+  font-size: 13px;
+  padding: 4px 12px;
+}
+.viewbar option {
+  color: #fff;
+}
+.viewbar button:hover:enabled,
+.viewbar button[aria-pressed="true"] {
+  background: #506457;
+}
+.viewbar #reference {
+  margin-left: auto;
+}
+.caption {
+  padding: 14px 0;
+}
+.caption b,
+.caption small {
+  display: block;
+}
+.caption small,
+.caption > span,
+footer,
+#system-count {
+  font-size: 12px;
+  color: #59675f;
+}
+#notice,
+#detail {
+  border-left: 3px solid #ae793b;
+  padding: 12px 14px;
+  background: #eee9dd;
+  font-size: 14px;
+}
+.bench {
+  background: #fdfcf8;
+  border: 1px solid #d4d7cf;
+  border-radius: 9px;
+  padding: 16px;
+}
+nav {
+  border-bottom: 1px solid #cdd1c8;
+  padding-bottom: 12px;
+}
+nav button {
+  flex: 1;
+}
+nav button[aria-pressed="true"],
+#systems button[aria-pressed="true"],
+.primary {
+  background: #274740;
+  color: #fff;
+}
+#systems {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+#systems button {
+  font-size: 12px;
+  padding: 5px 10px;
+}
+.search {
+  margin: 14px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f3f3ee;
+  border: 1px solid #d1d6ce;
+  border-radius: 5px;
+  padding: 0 10px;
+}
+.search input {
+  min-width: 0;
+  width: 100%;
+  height: 44px;
+  border: none;
+  background: transparent;
+}
+.listhead {
+  padding: 15px 0 8px;
+}
+.listhead span {
+  letter-spacing: 0;
+}
+#parts {
+  max-height: 330px;
+  overflow: auto;
+  border-top: 1px solid #d4d8d0;
+}
+#parts button {
+  width: 100%;
+  padding: 10px;
+  border: 0;
+  border-bottom: 1px solid #d4d8d0;
+  border-radius: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  text-align: left;
+  justify-content: space-between;
+  gap: 8px;
+}
+#parts button[aria-current="true"] {
+  background: #e7ede3;
+}
+#parts small {
+  font-size: 11px;
+  font-weight: 500;
+  color: #4b6256;
+}
+#detail {
+  margin-top: 12px;
+}
+#detail:empty {
+  display: none;
+}
+#detail p {
+  margin: 5px 0 9px;
+}
+#detail button {
+  margin-right: 4px;
+  margin-bottom: 3px;
+  font-size: 12px;
+}
+#paint fieldset {
+  margin: 16px 0 0;
+  padding: 0;
+  border: none;
+}
+#paint legend {
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+#paint button,
+#paint select {
+  margin: 0 4px 3px 0;
+  font-size: 13px;
+}
+#paint button[aria-pressed="true"] {
+  outline: 2px solid #395b50;
+  outline-offset: -2px;
+}
+.swatch {
+  min-width: 44px;
+}
+.swatch span {
+  display: block;
+  height: 18px;
+  border-radius: 3px;
+  border: 1px solid #0003;
+}
+.custom {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.custom input {
+  height: 44px;
+  width: 46px;
+}
+footer {
+  border-top: 1px solid #c9cec6;
+  margin: 24px 0 0;
+  padding: 14px 0;
+}
+dialog {
+  max-width: min(90vw, 460px);
+  border: 1px solid #9da99d;
+  border-radius: 10px;
+  padding: 22px;
+}
+dialog::backdrop {
+  background: #10272091;
+}
+dialog p {
+  max-height: 40vh;
+  overflow: auto;
+}
+dialog h2 {
+  margin: 0;
+}
+#accept {
+  background: #274740;
+  color: white;
+}
+@media (max-width: 760px) {
+  header {
+    height: 50px;
+    gap: 10px;
+  }
+  .brand b {
+    font-size: 27px;
+  }
+  .studio,
+  .divider,
+  .caption > span {
+    display: none;
+  }
+  main {
+    padding: 12px 12px 0;
+  }
+  .intro {
+    margin-bottom: 10px;
+  }
+  .intro h1 {
+    font-size: 32px;
+  }
+  .progress {
+    width: 105px;
+  }
+  .progress div {
+    display: block;
+  }
+  .progress strong {
+    display: block;
+  }
+  .layout {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .viewer,
+  .bench {
+    width: 100%;
+  }
+  .viewer {
+    position: static;
+  }
+  .bench {
+    padding: 12px;
+  }
+  #scene {
+    height: clamp(210px, 36svh, 330px);
+  }
+  .viewbar {
+    gap: 4px;
+  }
+  .viewbar button,
+  .viewbar select {
+    font-size: 12px;
+    padding: 3px 8px;
+  }
+  .caption {
+    padding: 7px 0;
+  }
+  .caption small {
+    display: inline;
+  }
+  #notice {
+    padding: 8px 10px;
+  }
+  .eyebrow {
+    font-size: 9px;
+  }
+  #parts {
+    max-height: 270px;
+  }
+  footer {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+}
+@media (max-height: 500px) and (min-width: 761px) {
+  #scene {
+    height: 250px;
+  }
+  .viewer {
+    position: static;
+  }
+}
+nav button[aria-pressed="true"]:hover,
+#systems button[aria-pressed="true"]:hover {
+  background: #31554b;
+  color: white;
+}
+@media (max-width: 760px) and (min-height: 580px) {
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+  .viewer {
+    display: contents;
+  }
+  #scene {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    height: clamp(190px, 31svh, 285px);
+    box-shadow: 0 3px 12px #17271b18;
+  }
+  html {
+    scroll-padding-top: calc(31svh + 8px);
+  }
+  #parts {
+    overscroll-behavior: contain;
+  }
+}

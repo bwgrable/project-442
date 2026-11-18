@@ -1,0 +1,23 @@
+{
+  "renderer": "Cloud Chromium / SwiftShader, DPR 1, 10 Mbps / 100 ms, cold context, finished reference",
+  "results": [
+    {
+      "width": 1440,
+      "height": 950,
+      "readyAndTwoFramesMs": 2773,
+      "triangles": 75978,
+      "drawCalls": 192,
+      "uncompressedBytes": 660103,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "readyAndTwoFramesMs": 2068,
+      "triangles": 75978,
+      "drawCalls": 192,
+      "uncompressedBytes": 660103,
+      "overflow": false
+    }
+  ]
+}
