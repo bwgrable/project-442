@@ -6,8 +6,8 @@ import { parts } from "./car-catalog.js";
 
 const views = {
   front: [
-    [-7, 3.3, 6.3],
-    [0, 0.98, 0],
+    [-6.0, 2.72, 7.9],
+    [0, 0.86, 0],
   ],
   side: [
     [0, 2, 11.8],
@@ -38,7 +38,7 @@ export function mountScene(canvas, fail) {
   });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.6));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.23;
+  renderer.toneMappingExposure = 1.1;
   const scene = new THREE.Scene();
   const generator = new THREE.PMREMGenerator(renderer);
   const room = new RoomEnvironment();
@@ -47,7 +47,7 @@ export function mountScene(canvas, fail) {
   scene.environmentIntensity = 0.8;
   room.dispose();
   generator.dispose();
-  scene.add(new THREE.HemisphereLight(0xfff3df, 0xb9aa93, 2));
+  scene.add(new THREE.HemisphereLight(0xfff3df, 0x9b8770, 1.2));
   const key = new THREE.DirectionalLight(0xfff3d7, 2.5);
   key.position.set(-5, 8, 4);
   scene.add(key);

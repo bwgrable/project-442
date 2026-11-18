@@ -205,7 +205,7 @@ test("restore tolerates corruption, invalid versions, unknown IDs and impossible
   );
   assert.deepEqual(restored.installed, ["frame", "front-crossmember"]);
   assert.equal(restored.style.paint, "#123456");
-  assert.equal(restored.style.roof, "body");
+  assert.equal(restored.style.roof, initial().style.roof);
   assert.equal(restored.style.wheels, "torque");
   assert.equal(restored.style.finish, "gloss");
   assert.equal(Object.hasOwn(restored.style, "unknown"), false);

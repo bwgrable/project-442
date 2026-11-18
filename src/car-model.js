@@ -1,3 +1,4 @@
+import { addValances, addFascia } from "./car-fascia.js";
 import * as THREE from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
@@ -30,11 +31,11 @@ export function makeCar() {
     white: mat("#f9edcf", 0.1, 0.25),
     amber: mat("#e0a03e", 0.25, 0.3),
     glass: new THREE.MeshPhysicalMaterial({
-      color: "#77969b",
+      color: "#445b60",
       metalness: 0.15,
       roughness: 0.12,
       transparent: true,
-      opacity: 0.37,
+      opacity: 0.39,
       side: THREE.DoubleSide,
       depthWrite: false,
     }),
@@ -313,11 +314,30 @@ export function makeCar() {
         const a = (i / 5) * Math.PI * 2;
         const dx = Math.cos(a),
           dy = Math.sin(a);
-        bar(
+        const spoke = (r, w, h) => [
+          x + dx * r - dy * w,
+          0.63 + dy * r + dx * w,
+          s * h,
+        ];
+        surface(
           rally,
-          [x + dx * 0.1, 0.63 + dy * 0.1, s * 1.25],
-          [x + dx * 0.29, 0.63 + dy * 0.29, s * 1.25],
-          0.051,
+          [
+            [
+              spoke(0.075, -0.044, 1.258),
+              spoke(0.075, 0, 1.284),
+              spoke(0.075, 0.044, 1.258),
+            ],
+            [
+              spoke(0.19, -0.06, 1.235),
+              spoke(0.19, 0, 1.262),
+              spoke(0.19, 0.06, 1.235),
+            ],
+            [
+              spoke(0.31, -0.082, 1.232),
+              spoke(0.31, 0, 1.249),
+              spoke(0.31, 0.082, 1.232),
+            ],
+          ],
           m.steel,
         );
         bar(
@@ -657,7 +677,7 @@ export function makeCar() {
     box(p, [0.16, 0.025, 0.035], m.chrome, [-0.47, 1.28, s * 0.953]);
   }
   const liner = part("headliner");
-  surface(liner, roofRows(2.194, 0.96), m.interior);
+  surface(liner, roofRows(2.2, 0.844), m.interior);
   const belts = part("seat-belts");
   for (const s of [-1, 1]) {
     bar(belts, [0.34, 1.14, s * 0.18], [0.06, 1.13, s * 0.8], 0.018, m.dark);
@@ -668,362 +688,361 @@ export function makeCar() {
   box(shelf, [0.48, 0.035, 1.72], m.carpet, [1.57, 1.47, 0]);
   for (const s of [-1, 1])
     cyl(shelf, 0.14, 0.012, m.dark, [1.56, 1.497, s * 0.51]);
-  // Exterior panels use authored curves and open wheel arches, not overlapping boxes.
-  function flank(p, x0, x1, arch, s) {
-    const rows = [];
-    for (let i = 0; i <= 52; i++) {
-      const x = x0 + ((x1 - x0) * i) / 52;
-      const dx = arch === null ? Infinity : x - arch;
-      const bottom =
-        Math.abs(dx) < 0.655
-          ? 0.66 + Math.sqrt(Math.max(0, 0.655 ** 2 - dx ** 2))
-          : 0.49;
-      const top = 1.505 + 0.05 * Math.cos(x * 0.5);
-      const row = [];
-      for (let j = 0; j <= 9; j++) {
-        const y = bottom + ((top - bottom) * j) / 9;
-        const z =
-          1.115 +
-          0.055 *
-            Math.sin(Math.min(1, Math.max(0, (y - 0.49) / 1.04)) * Math.PI) -
-          0.055 * Math.max(0, Math.abs(x) - 2.55);
-        row.push([x, y, s * z]);
-      }
-      rows.push(row);
-    }
-    surface(p, rows, m.body);
-    // Continuous top shoulder rolls inward to meet hood / deck / window sill.
-    surface(
-      p,
-      [
-        [
-          [x0, 1.46, s * 1.105],
-          [(x0 + x1) / 2, 1.55, s * 1.13],
-          [x1, 1.5, s * 1.115],
-        ],
-        [
-          [x0, 1.49, s * 0.98],
-          [(x0 + x1) / 2, 1.565, s * 1.0],
-          [x1, 1.52, s * 0.99],
-        ],
-      ],
-      m.body,
+  // Cross sections follow the fender peaks, the waist at the door and the
+  // kicked-up rear quarter. Shared stations keep adjoining removable panels flush.
+  const stations = [
+    [-3.05, 1.49, 1.095],
+    [-2.82, 1.56, 1.16],
+    [-2.32, 1.59, 1.19],
+    [-1.85, 1.59, 1.21],
+    [-1.34, 1.55, 1.175],
+    [-0.92, 1.53, 1.15],
+    [-0.35, 1.48, 1.135],
+    [0.45, 1.455, 1.13],
+    [0.85, 1.48, 1.15],
+    [1.24, 1.57, 1.19],
+    [1.73, 1.65, 1.23],
+    [2.18, 1.64, 1.225],
+    [2.62, 1.59, 1.19],
+    [3.04, 1.49, 1.105],
+  ];
+  function sectionAt(x) {
+    const i = Math.max(
+      1,
+      stations.findIndex((row) => row[0] >= x),
     );
-    if (arch !== null) {
-      const pts = [];
-      for (let i = 0; i <= 28; i++) {
-        const a = Math.PI - (i / 28) * Math.PI;
-        pts.push([
-          arch + Math.cos(a) * 0.662,
-          0.66 + Math.sin(a) * 0.663,
-          s * 1.174,
+    const a = stations[i - 1],
+      b = stations[i];
+    let t = THREE.MathUtils.clamp((x - a[0]) / (b[0] - a[0]), 0, 1);
+    t = t * t * (3 - 2 * t);
+    return [
+      THREE.MathUtils.lerp(a[1], b[1], t),
+      THREE.MathUtils.lerp(a[2], b[2], t),
+    ];
+  }
+  const wheelScale = 0.8,
+    archRX = 0.65 * wheelScale;
+  function flank(p, left, right, axle, side) {
+    const rows = [],
+      opening = [];
+    const radius = archRX + 0.022;
+    const xs = Array.from(
+      { length: 81 },
+      (_, i) => left + ((right - left) * i) / 80,
+    );
+    const lowEdge = (x) =>
+      0.44 + 0.22 * Math.pow(Math.max(0, (Math.abs(x) - 2.45) / 0.6), 1.4);
+    const archRise = (x) =>
+      0.62 + 0.69 * Math.sqrt(Math.max(0, 1 - ((x - axle) / radius) ** 2));
+    const makeRow = (x) => {
+      const [top, w] = sectionAt(x);
+      const arch = axle !== null && Math.abs(x - axle) <= radius;
+      const base = arch ? archRise(x) : lowEdge(x);
+      const row = [
+        [base, arch ? w - 0.015 : w - 0.12],
+        [base + 0.026, arch ? w : w - 0.085],
+        [top - 0.19, w + 0.026],
+        [top - 0.11, w + 0.034],
+        [top - 0.045, w + 0.012],
+        [top - 0.009, w - 0.014],
+        [top, w - 0.044],
+        [top - 0.008, w - 0.093],
+        [top - 0.016, 0.997],
+      ];
+      return row.map(([y, z]) => [x, y, side * z]);
+    };
+    for (const x of xs) rows.push(makeRow(x));
+    const skin = surface(p, rows, m.body);
+    // Compute normals from equal station spacing, independent of the shape of
+    // neighboring triangles at the wheel opening. This keeps reflections smooth.
+    const normals = skin.geometry.getAttribute("normal");
+    for (let i = 0; i < xs.length; i++) {
+      const x = xs[i],
+        prev = makeRow(Math.max(left, x - 0.003)),
+        next = makeRow(Math.min(right, x + 0.003));
+      for (let j = 0; j < rows[i].length; j++) {
+        const longitudinal = new THREE.Vector3(...next[j]).sub(
+          new THREE.Vector3(...prev[j]),
+        );
+        const tangent = (k) =>
+          new THREE.Vector3(...rows[i][k + 1])
+            .sub(new THREE.Vector3(...rows[i][k]))
+            .normalize();
+        const cross = tangent(Math.min(j, rows[i].length - 2));
+        if (j > 0 && j < rows[i].length - 1) cross.add(tangent(j - 1));
+        const n = longitudinal.cross(cross).normalize();
+        normals.setXYZ(i * rows[i].length + j, n.x, n.y, n.z);
+      }
+    }
+    if (axle !== null) {
+      for (let i = 0; i <= 36; i++) {
+        const a = (Math.PI * i) / 36,
+          x = axle - radius * Math.cos(a);
+        opening.push([
+          x,
+          0.62 + 0.69 * Math.sin(a),
+          side * (sectionAt(x)[1] - 0.006),
         ]);
       }
-      tube(p, pts, 0.014, m.chrome);
+      tube(
+        p,
+        opening.filter((_, i) => i % 2 === 0),
+        0.011,
+        m.chrome,
+      );
+      // Rolled inner lip and shaded wheelhouse, both removable with the panel.
+      surface(
+        p,
+        opening.map(([x, y, z]) => [
+          [x, y, z],
+          [x, y, side * 0.78],
+        ]),
+        m.dark,
+      );
+      surface(
+        p,
+        opening.map(([x, y]) => [
+          [x, 0.55, side * 0.76],
+          [x, y, side * 0.76],
+        ]),
+        m.dark,
+      );
     }
-    const rockerRuns =
-      arch === null
-        ? [[x0, x1]]
+    const runs =
+      axle === null
+        ? [[left, right]]
         : [
-            [x0, arch - 0.66],
-            [arch + 0.66, x1],
+            [left, axle - radius],
+            [axle + radius, right],
           ];
-    for (const [a, b] of rockerRuns)
-      if (b > a)
-        tube(
-          p,
-          [
-            [a, 0.57, s * 1.141],
-            [b, 0.57, s * 1.141],
-          ],
-          0.014,
-          m.chrome,
-        );
+    for (const [a, b] of runs) {
+      const line = Array.from({ length: 7 }, (_, i) => {
+        const x = a + ((b - a) * i) / 6;
+        return [x, lowEdge(x) + 0.043, side * (sectionAt(x)[1] - 0.072)];
+      });
+      tube(p, line, 0.012, m.chrome);
+    }
   }
   for (const [side, s] of [
     ["left", 1],
     ["right", -1],
   ]) {
     flank(part(`front-fender-${side}`), -3.03, -0.91, -1.85, s);
-    flank(part(`door-${side}`), -0.89, 0.98, null, s);
-    flank(part(`rear-quarter-${side}`), 1.005, 3.03, 1.85, s);
+    flank(part(`door-${side}`), -0.901, 1.09, null, s);
+    flank(part(`rear-quarter-${side}`), 1.099, 3.03, 1.85, s);
   }
-  function roofRows(y = 2.235, width = 0.99) {
-    return [-0.5, -0.33, 0, 0.55, 0.89, 1.08].map((x, i) => {
-      const height = y - (i === 0 ? 0.09 : i === 5 ? 0.1 : 0);
-      return [-1, -0.65, 0, 0.65, 1].map((t) => [
+  function roofRows(y = 2.235, width = 0.86) {
+    const stations = [
+      [-0.48, -0.082, 0.92],
+      [-0.37, -0.035, 0.965],
+      [-0.12, 0, 1],
+      [0.48, 0.01, 1],
+      [0.86, -0.008, 0.994],
+      [1.12, -0.065, 0.968],
+      [1.25, -0.115, 0.944],
+    ];
+    return stations.map(([x, dy, w]) =>
+      [-1, -0.9, -0.65, 0, 0.65, 0.9, 1].map((t) => [
         x,
-        height + 0.044 * (1 - t * t),
-        t * width,
-      ]);
-    });
-  }
-  const roof = part("roof-structure");
-  surface(roof, roofRows(), m.roof);
-  for (const s of [-1, 1]) {
-    sheet(
-      roof,
-      [
-        [-1.05, 1.54],
-        [-0.53, 2.16],
-        [-0.4, 2.18],
-        [-0.9, 1.54],
-      ],
-      m.roof,
-      s * 0.99,
-      0.055,
-    );
-    sheet(
-      roof,
-      [
-        [0.89, 2.19],
-        [1.09, 2.14],
-        [1.84, 1.53],
-        [1.28, 1.54],
-      ],
-      m.roof,
-      s * 0.99,
-      0.07,
-    );
-    tube(
-      roof,
-      [
-        [-1.04, 1.55, s * 1.025],
-        [-0.5, 2.19, s * 1.025],
-        [0.7, 2.23, s * 1.025],
-        [1.1, 2.16, s * 1.025],
-        [1.82, 1.55, s * 1.025],
-      ],
-      0.014,
-      m.chrome,
-    );
-  }
-  function deckRows(xs, heights, width = 1.025) {
-    return xs.map((x, i) =>
-      [-1, -0.6, 0, 0.6, 1].map((t) => [
-        x,
-        heights[i] + 0.035 * (1 - t * t),
-        t * width,
+        y + dy + 0.053 * (1 - t * t),
+        t * w * width,
       ]),
     );
   }
-  const hood = part("hood");
-  surface(
-    hood,
-    deckRows([-3.02, -2.8, -1.6, -1.02], [1.475, 1.52, 1.57, 1.545]),
-    m.body,
-  );
-  const trunkLid = part("trunk-lid");
-  surface(
-    trunkLid,
-    deckRows([1.76, 2.12, 2.78, 3.025], [1.55, 1.55, 1.51, 1.475]),
-    m.body,
-  );
-  // Twin custom stripes conform to the panel crown. Their visibility is a style choice.
-  for (const [p, xs, ys] of [
-    [hood, [-3.015, -2.8, -1.6, -1.025], [1.482, 1.527, 1.577, 1.552]],
-    [trunkLid, [1.765, 2.12, 2.78, 3.02], [1.557, 1.557, 1.517, 1.482]],
-  ])
-    for (const s of [-1, 1])
-      surface(
-        p,
-        xs.map((x, i) =>
-          [s * 0.25, s * 0.43].map((z) => [
-            x,
-            ys[i] + 0.035 * (1 - (z / 1.025) ** 2),
-            z,
-          ]),
-        ),
-        m.stripe,
-      );
-  const fv = part("front-valance");
-  surface(
-    fv,
-    [
-      [
-        [-3.045, 0.65, -1.1],
-        [-3.1, 0.66, 0],
-        [-3.045, 0.65, 1.1],
-      ],
-      [
-        [-3.055, 1.03, -1.12],
-        [-3.13, 1.03, 0],
-        [-3.055, 1.03, 1.12],
-      ],
-    ],
-    m.body,
-  );
-  for (const s of [-1, 1])
-    box(fv, [0.03, 0.09, 0.22], m.amber, [-3.13, 0.86, s * 0.73]);
-  const rv = part("rear-valance");
-  surface(
-    rv,
-    [
-      [
-        [3.045, 0.67, -1.09],
-        [3.1, 0.67, 0],
-        [3.045, 0.67, 1.09],
-      ],
-      [
-        [3.05, 1.48, -1.11],
-        [3.1, 1.48, 0],
-        [3.05, 1.48, 1.11],
-      ],
-    ],
-    m.body,
-  );
-  const windshield = part("windshield");
-  surface(
-    windshield,
-    [
-      [
-        [-1.01, 1.57, -0.955],
-        [-1.08, 1.58, 0],
-        [-1.01, 1.57, 0.955],
-      ],
-      [
-        [-0.49, 2.159, -0.94],
-        [-0.53, 2.208, 0],
-        [-0.49, 2.159, 0.94],
-      ],
-    ],
-    m.glass,
-  );
-  for (const x of [0, 1]) {
-    const y = x ? 2.165 : 1.568,
-      xx = x ? -0.49 : -1.01;
-    tube(
-      windshield,
-      [
-        [xx, y, -0.96],
-        [xx - 0.05, y + 0.03, 0],
-        [xx, y, 0.96],
-      ],
-      0.014,
-      m.chrome,
-    );
+  const roof = part("roof-structure");
+  surface(roof, roofRows(), m.roof);
+  function rail(p, points, r = 0.013) {
+    tube(p, points, r, m.chrome);
   }
-  const rearWindow = part("rear-window");
-  surface(
-    rearWindow,
-    [
+  for (const s of [-1, 1]) {
+    const aBottom = [-1.15, 1.549, s * 1.01],
+      aTop = [-0.48, 2.153, s * 0.792];
+    const paneBottom = [-1.03, 1.546, s * 1.018],
+      paneTop = [-0.405, 2.18, s * 0.835];
+    surface(
+      roof,
       [
-        [1.095, 2.13, -0.91],
-        [1.12, 2.17, 0],
-        [1.095, 2.13, 0.91],
+        [aBottom, paneBottom],
+        [aTop, paneTop],
       ],
-      [
-        [1.765, 1.575, -0.91],
-        [1.84, 1.59, 0],
-        [1.765, 1.575, 0.91],
-      ],
-    ],
-    m.glass,
-  );
-  for (const [x, y] of [
-    [1.1, 2.14],
-    [1.77, 1.58],
-  ])
-    tube(
-      rearWindow,
-      [
-        [x, y, -0.92],
-        [x + 0.04, y + 0.025, 0],
-        [x, y, 0.92],
-      ],
-      0.014,
-      m.chrome,
+      m.body,
     );
+    rail(roof, [
+      paneBottom,
+      paneTop,
+      [0.34, 2.239, s * 0.862],
+      [0.85, 2.225, s * 0.85],
+      [1.12, 2.17, s * 0.83],
+    ]);
+    // Broad sail panels wrap onto the quarter shoulders and rear glass reveal.
+    const sail = [
+      [
+        [1.1, 2.17, 0.829],
+        [1.25, 2.12, 0.812],
+      ],
+      [
+        [1.2, 2.09, 0.868],
+        [1.44, 2.02, 0.835],
+      ],
+      [
+        [1.32, 1.96, 0.909],
+        [1.7, 1.89, 0.88],
+      ],
+      [
+        [1.48, 1.81, 0.956],
+        [1.99, 1.75, 0.939],
+      ],
+      [
+        [1.59, 1.63, 1.003],
+        [2.27, 1.616, 1.015],
+      ],
+    ];
+    surface(
+      roof,
+      sail.map((row) => row.map(([x, y, z]) => [x, y, s * z])),
+      m.roof,
+    );
+    rail(roof, [
+      [1.59, 1.63, s * 1.003],
+      [1.87, 1.636, s * 1.01],
+      [2.27, 1.616, s * 1.015],
+    ]);
+  }
+  const hood = part("hood"),
+    trunkLid = part("trunk-lid");
+  function deck(p, start, end, front) {
+    const rows = [],
+      stripes = [[], []];
+    for (let i = 0; i <= 32; i++) {
+      const t = i / 32,
+        x = THREE.MathUtils.lerp(start, end, t);
+      const y = sectionAt(x)[0] - 0.014;
+      const swell = front ? Math.pow(Math.sin(Math.PI * t), 0.72) * 0.085 : 0;
+      const crown = (z) =>
+        y +
+        0.045 * (1 - z * z) +
+        swell * Math.exp(-Math.pow((Math.abs(z) - 0.42) / 0.18, 4));
+      const point = (z) => [
+        x - (front ? 0.073 : -0.044) * (1 - z * z) * (front ? 1 - t : t),
+        crown(z),
+        z,
+      ];
+      rows.push(
+        Array.from({ length: 33 }, (_, j) => point((j / 16 - 1) * 0.995)),
+      );
+      for (const [index, s] of [-1, 1].entries()) {
+        const path = front ? [0.235, 0.252, 0.585, 0.601] : [0.03, 0.045];
+        stripes[index].push(
+          path.map((z) => {
+            const v = point(s * z);
+            v[1] += 0.003;
+            return v;
+          }),
+        );
+      }
+    }
+    surface(p, rows, m.body);
+    for (const strip of stripes) {
+      if (front) {
+        surface(
+          p,
+          strip.map((r) => r.slice(0, 2)),
+          m.stripe,
+        );
+        surface(
+          p,
+          strip.map((r) => r.slice(2)),
+          m.stripe,
+        );
+      }
+    }
+  }
+  deck(hood, -3.02, -1.14, true);
+  deck(trunkLid, 2.237, 3.025, false);
+  addValances({ part, surface, m });
+  function curvedGlass(p, top, bottom) {
+    const rows = [];
+    for (let i = 0; i <= 5; i++) {
+      const t = i / 5;
+      rows.push(
+        Array.from({ length: 17 }, (_, j) => {
+          const u = j / 8 - 1,
+            edge = 1 - u * u;
+          return [
+            THREE.MathUtils.lerp(
+              top[0] + top[3] * edge,
+              bottom[0] + bottom[3] * edge,
+              t,
+            ),
+            THREE.MathUtils.lerp(
+              top[1] + top[4] * edge,
+              bottom[1] + bottom[4] * edge,
+              t,
+            ),
+            u * THREE.MathUtils.lerp(top[2], bottom[2], t),
+          ];
+        }),
+      );
+    }
+    surface(p, rows, m.glass);
+    rail(
+      p,
+      rows[0].filter((_, i) => i % 4 === 0),
+    );
+    rail(
+      p,
+      rows.at(-1).filter((_, i) => i % 4 === 0),
+    );
+    for (const i of [0, 16])
+      rail(
+        p,
+        rows.map((r) => r[i]),
+        0.011,
+      );
+  }
+  curvedGlass(
+    part("windshield"),
+    [-0.48, 2.153, 0.792, -0.035, 0.053],
+    [-1.15, 1.549, 1.01, -0.085, 0.038],
+  );
+  curvedGlass(
+    part("rear-window"),
+    [1.25, 2.12, 0.812, 0.014, 0.053],
+    [2.27, 1.616, 1.015, 0.035, 0.043],
+  );
   const sideGlass = part("side-glass");
   for (const s of [-1, 1]) {
-    sheet(
+    const stations = [
+      [-0.405, 2.178, 0.832, -1.025],
+      [0.32, 2.235, 0.856, 0.34],
+      [0.88, 2.214, 0.851, 0.91],
+      [1.1, 2.167, 0.824, 1.585],
+    ];
+    surface(
       sideGlass,
-      [
-        [-0.87, 1.56],
-        [-0.43, 2.15],
-        [0.77, 2.18],
-        [1.25, 1.56],
-      ],
+      stations.map(([x, y, z, foot]) => [
+        [foot, sectionAt(foot)[0], s * 1.003],
+        [x, y, s * z],
+      ]),
       m.glass,
-      s * 1.003,
-      0.006,
+    );
+    rail(
+      sideGlass,
+      stations.map(([, , , foot]) => [
+        foot,
+        sectionAt(foot)[0] + 0.003,
+        s * 1.012,
+      ]),
     );
     bar(
       sideGlass,
-      [0.72, 1.56, s * 1.01],
-      [0.76, 2.18, s * 1.01],
-      0.012,
+      [0.91, sectionAt(0.91)[0], s * 1.006],
+      [0.88, 2.214, s * 0.854],
+      0.008,
       m.chrome,
     );
   }
-  // Deep divided grille, paired round lamps and full-width chrome bumpers.
-  const grille = part("split-grille");
-  for (const s of [-1, 1]) {
-    box(grille, [0.075, 0.37, 0.53], m.dark, [-3.06, 1.255, s * 0.31]);
-    for (let i = 0; i < 6; i++)
-      box(grille, [0.025, 0.012, 0.53], m.steel, [
-        -3.108,
-        1.11 + i * 0.056,
-        s * 0.31,
-      ]);
-  }
-  box(grille, [0.12, 0.43, 0.055], m.chrome, [-3.12, 1.25, 0]);
-  for (const y of [1.04, 1.46])
-    tube(
-      grille,
-      [
-        [-3.055, y, -1.07],
-        [-3.15, y, 0],
-        [-3.055, y, 1.07],
-      ],
-      0.018,
-      m.chrome,
-    );
-  for (const [side, s] of [
-    ["left", 1],
-    ["right", -1],
-  ]) {
-    const lamps = part(`headlamps-${side}`);
-    for (const z of [0.72, 0.99]) {
-      cyl(lamps, 0.142, 0.07, m.dark, [-3.045, 1.26, s * z], "x", 0.142, 28);
-      cyl(lamps, 0.128, 0.015, m.chrome, [-3.091, 1.26, s * z], "x", 0.128, 28);
-      cyl(lamps, 0.105, 0.019, m.white, [-3.104, 1.26, s * z], "x", 0.105, 28);
-      for (const dy of [-0.035, 0.035])
-        bar(
-          lamps,
-          [-3.116, 1.26 + dy, s * z - 0.08],
-          [-3.116, 1.26 + dy, s * z + 0.08],
-          0.004,
-          m.chrome,
-        );
-    }
-    const tail = part(`tail-lamp-${side}`);
-    box(tail, [0.065, 0.39, 0.14], m.chrome, [3.083, 1.22, s * 0.99]);
-    box(tail, [0.075, 0.34, 0.105], m.lens, [3.125, 1.22, s * 0.99]);
-    for (const y of [1.14, 1.28])
-      box(tail, [0.012, 0.014, 0.106], m.chrome, [3.169, y, s * 0.99]);
-  }
-  for (const [id, x, front] of [
-    ["front-bumper", -3.16, true],
-    ["rear-bumper", 3.16, false],
-  ]) {
-    const p = part(id);
-    tube(
-      p,
-      [
-        [x + (front ? 0.12 : -0.12), 0.98, -1.18],
-        [x, 0.97, -0.87],
-        [x + (front ? -0.025 : 0.025), 0.95, 0],
-        [x, 0.97, 0.87],
-        [x + (front ? 0.12 : -0.12), 0.98, 1.18],
-      ],
-      0.066,
-      m.chrome,
-    );
-    for (const s of [-1, 1])
-      box(p, [0.1, 0.18, 0.065], m.chrome, [x, 0.96, s * 0.5]);
-    box(p, [0.018, 0.16, 0.34], m.dark, [x + (front ? -0.07 : 0.07), 0.94, 0]);
-  }
+  addFascia({ part, surface, mesh, box, bar, m });
   const handles = part("door-handles");
   for (const s of [-1, 1]) {
     box(handles, [0.18, 0.035, 0.036], m.chrome, [0.63, 1.38, s * 1.19]);
@@ -1077,8 +1096,8 @@ export function makeCar() {
       cursor += 0.105;
     }
   }
-  emblem(-3.161, 1.28, -0.14);
-  emblem(3.126, 1.23, 0.14, false, -1);
+  emblem(-3.157, 1.28, 0.24);
+  emblem(3.041, 1.255, 0.14, false, -1);
   for (const s of [-1, 1])
     emblem(s > 0 ? -1.09 : -0.81, 1.39, s * 1.18, true, s);
   // Compact engine placement keeps the closed hood clear of the air-cleaner lid.
@@ -1132,6 +1151,22 @@ export function makeCar() {
     }
   }
   for (const p of Object.values(parts)) optimize(p);
+  // Keep the wheel faces round as the assembly adopts the lower hardtop stance.
+  group.scale.y = wheelScale;
+  for (const end of ["front", "rear"])
+    for (const side of ["left", "right"]) {
+      const x = end === "front" ? -1.85 : 1.85,
+        sign = side === "left" ? 1 : -1;
+      for (const id of [
+        `wheel-${end}-${side}`,
+        `tire-${end}-${side}`,
+        `${end}-brake-${side}`,
+      ]) {
+        parts[id].scale.x = wheelScale;
+        parts[id].position.x = x * (1 - wheelScale);
+        parts[id].position.z = -sign * 0.095;
+      }
+    }
   function applyStyle(style = {}) {
     m.body.color.set(style.paint || "#9e332a");
     m.roof.color.set(
@@ -1147,6 +1182,10 @@ export function makeCar() {
     for (const a of [m.body, m.roof]) {
       a.roughness = style.finish === "satin" ? 0.64 : 0.24;
       a.metalness = style.finish === "satin" ? 0.3 : 0.55;
+    }
+    if (style.roof && style.roof !== "body") {
+      m.roof.roughness = 0.78;
+      m.roof.metalness = 0.06;
     }
     group.traverse((o) => {
       if (o.userData.wheelStyle)

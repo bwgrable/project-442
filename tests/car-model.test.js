@@ -73,8 +73,8 @@ test("wheel arches really open around separately installed wheels and tires", ()
       );
       const center = casing.getCenter(new THREE.Vector3());
       assert.ok(Math.abs(center.x - x) < 0.005);
-      assert.ok(Math.abs(center.y - 0.63) < 0.005);
-      assert.ok(Math.abs(center.z - s * 1.1) < 0.005);
+      assert.ok(Math.abs(center.y - 0.504) < 0.005);
+      assert.ok(Math.abs(center.z - s * 1.005) < 0.005);
       for (const y of [0.57, 0.78]) {
         const through = new THREE.Raycaster(
           new THREE.Vector3(x, y, s * 1.6),
@@ -89,7 +89,7 @@ test("wheel arches really open around separately installed wheels and tires", ()
         );
       }
       const above = new THREE.Raycaster(
-        new THREE.Vector3(x, 1.46, s * 1.6),
+        new THREE.Vector3(x, 1.17, s * 1.6),
         new THREE.Vector3(0, 0, -s),
         0,
         0.7,
@@ -152,4 +152,18 @@ test("air cleaner clears closed hood and all custom finishes preserve geometry a
   assert.equal(stripe.visible, false);
   assert.ok(door.roughness < 0.3);
   assert.equal(car.parts.hood.visible, false);
+});
+
+test("hardtop has round, inset tires and a rear shoulder above the door waist", () => {
+  const car = makeCar();
+  car.group.updateMatrixWorld(true);
+  const bounds = id => new THREE.Box3().setFromObject(car.parts[id]);
+  const tire = bounds("tire-rear-left");
+  const size = tire.getSize(new THREE.Vector3());
+  assert.ok(Math.abs(size.x-size.y)<.015,"tire remains round in side view");
+  assert.ok(size.y < CAR_EXTENTS.wheelbase * .28,"wheel size relative to wheelbase");
+  assert.ok(bounds("rear-quarter-left").max.z > tire.max.z,"tire fits within the rear shoulder");
+  assert.ok(bounds("rear-quarter-left").max.y > bounds("door-left").max.y + .065,"rear haunch rises above door");
+  const body=new THREE.Box3().setFromObject(car.group).getSize(new THREE.Vector3());
+  assert.ok(body.y/body.x < .30,"low coupe silhouette");
 });

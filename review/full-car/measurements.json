@@ -4,19 +4,19 @@
     {
       "width": 1440,
       "height": 950,
-      "readyAndTwoFramesMs": 2773,
-      "triangles": 75978,
-      "drawCalls": 192,
-      "uncompressedBytes": 660103,
+      "readyAndTwoFramesMs": 4238,
+      "triangles": 87514,
+      "drawCalls": 199,
+      "uncompressedBytes": 664637,
       "overflow": false
     },
     {
       "width": 390,
       "height": 844,
-      "readyAndTwoFramesMs": 2068,
-      "triangles": 75978,
-      "drawCalls": 192,
-      "uncompressedBytes": 660103,
+      "readyAndTwoFramesMs": 3211,
+      "triangles": 87514,
+      "drawCalls": 199,
+      "uncompressedBytes": 664637,
       "overflow": false
     }
   ]

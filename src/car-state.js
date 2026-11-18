@@ -3,7 +3,7 @@ import { parts } from "./car-catalog.js";
 const catalog = new Map(parts.map((part) => [part.id, part]));
 const defaultStyle = Object.freeze({
   paint: "#7d1e29",
-  roof: "body",
+  roof: "#282927",
   stripe: "off",
   interior: "#24262a",
   wheels: "rally",
